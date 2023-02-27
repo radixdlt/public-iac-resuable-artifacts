@@ -1,0 +1,254 @@
+# A workflow to build docker images inside of the radixdlt-organization.
+# It should be used for all docker build processes in order to profit from:
+# - caching
+# - streamlined authentication flow
+# - auditing on secret access (coming soon)
+# - automatic updates to dependent GH actions
+# - image security scanning (coming soon)
+# - dockerfile linting
+
+name: build-and-push-docker
+
+on:
+  workflow_call:
+    secrets:
+      workload_identity_provider:
+        description: 'Authentication method for gcr'
+      service_account:
+        description: 'Authentication method for gcr'
+    inputs:
+      environment:
+        description: 'Name of environment that will enforce manual approval'
+        required: false
+        default: ''
+        type: string
+      platforms:
+        description: 'The platforms to build the image on'
+        required: true
+        type: string
+      cache_repo:
+        description: 'The repository to store the cache image in'
+        required: false
+        type: string
+      cache_tag_suffix:
+        description: 'The tag of the cache image'
+        required: false
+        type: string
+        default: 'build_cache'
+      tag:
+        description: 'The tag to push'
+        required: true
+        type: string
+      labels:
+        description: 'The labels to push'
+        required: false
+        type: string
+        default: ''
+      image_name:
+        description: 'The name of the image'
+        required: true
+        type: string
+      image_organization:
+        description: 'The organization to push the image to'
+        required: true
+        type: string
+      image_registry:
+        description: 'The registry to push the image to'
+        required: true
+        type: string
+      restore_artifact:
+        description: 'Wether or not to restore artifacts'
+        required: false
+        type: string
+        default: "false"
+      artifact_name:
+        description: 'Name of the artifact'
+        required: false
+        type: string
+      artifact_location:
+        description: 'Directory to store the artifact in'
+        required: false
+        type: string
+      role_to_assume:
+        description: 'The role to assume to fetch registry credentials'
+        required: false
+        type: string
+      context:
+        description: 'The folder from which to execute the build command'
+        required: true
+        type: string
+      dockerfile:
+        description: 'The path to the dockerfile to build'
+        required: true
+        type: string
+      enable_dockerhub:
+        description: 'Wether to log into dockerhub'
+        required: false
+        type: string
+        default: "false"
+      enable_gcr:
+        description: 'Wether to log into google cloud registry'
+        required: false
+        type: string
+        default: "true"
+      enable_trivy:
+        description: 'Wether to scan image for vulnerability'
+        required: false
+        type: string
+        default: "false"
+      enable_pr_comment:
+        description: 'Wether to scan image for vulnerability'
+        required: false
+        type: string
+        default: "true"
+
+jobs:
+  build-and-push:
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-22.04
+    steps:
+      # This is version v3.3.0 
+      # https://github.com/actions/checkout/releases/tag/v3.3.0 
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c 
+        with:
+          fetch-depth: 0
+      # This is version v3.1.0 
+      # https://github.com/hadolint/hadolint-action/releases/tag/54c9adbab1582c2ef04b2016b760714a4bfde3cf
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ${{ inputs.dockerfile }}
+          no-fail: true
+
+      # Restoring Artifacts build in a previous step
+      - if: inputs.restore_artifact == 'true'
+        name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ${{ inputs.artifact_location }}
+      - if: inputs.restore_artifact == 'true'
+        name: Display structure of downloaded files
+        run: ls -R ${{ inputs.artifact_location }}
+
+      # Authentication
+      ## Google
+      - id: gcr-auth
+        uses: google-github-actions/auth@a61909d048e0be579b6c15b27088d19668493851
+        with:
+          workload_identity_provider: ${{ secrets.workload_identity_provider }}
+          service_account: ${{ secrets.service_account }}
+          create_credentials_file: true
+      - name: 'Register gcloud as Docker credential helper'
+        run: |
+            gcloud auth configure-docker -q
+      
+      ## Dockerhub
+      - if: inputs.enable_dockerhub == 'true'
+        name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: ${{ inputs.role_to_assume }}
+          aws-region: eu-west-2
+      - if: inputs.enable_dockerhub == 'true'
+        name: Read secrets from AWS Secrets Manager into environment variables
+        uses: aws-actions/aws-secretsmanager-get-secrets@v1
+        with:
+          secret-ids: |
+            DOCKERHUB, github-actions/rdxworks/dockerhub-images/release-credentials
+          parse-json-secrets: true
+      - if: inputs.enable_dockerhub == 'true'
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{env.DOCKERHUB_USERNAME}}
+          password: ${{env.DOCKERHUB_TOKEN}}
+
+      # Setting up Build environment
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Building the image
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          file: ${{ inputs.dockerfile }}
+          context: ${{ inputs.context }}
+          push: true
+          platforms: ${{ inputs.platforms }}
+          cache-from: |
+            type=registry,ref=${{ inputs.cache_repo }}:build-cache-${{ inputs.cache_tag_suffix }},mode=max 
+          cache-to: |
+            type=registry,ref=${{ inputs.cache_repo }}:build-cache-${{ inputs.cache_tag_suffix }},mode=max 
+          tags: |
+            ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
+          labels: ${{ inputs.labels }}
+
+      # Post Processing
+      ## adding image tags to pull request
+      - if: github.event_name == 'pull_request' && inputs.enable_pr_comment == 'true'
+        name: Add docker tags to PR comment
+        uses: thollander/actions-comment-pull-request@632cf9ce90574d125be56b5f3405cda41a84e2fd
+        with:
+          message: |
+            Docker tags
+            ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
+          comment_tag: dockerTags
+      
+      ## image scanning
+      - if: inputs.enable_trivy == 'true'
+        name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+      - if: inputs.enable_trivy == 'true'
+        name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+
+# Example Usage
+# 
+# build_push_container:
+#   needs: 
+#     - build_deb
+#   uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/docker-build.yml@main
+#   with:
+#     environment: "release"
+#     # image information
+#     image_registry: "eu.gcr.io"
+#     image_organization: "dev-container-repo"
+#     image_name: "babylon-node"
+#     tag: "latest"
+#     labels: ""
+#     # build information
+#     restore_artifact: "true"
+#     artifact_name: "deb4docker"
+#     artifact_location: "docker"
+#     context: "docker"
+#     dockerfile: "./docker/Dockerfile.core"
+#     platforms: "linux/amd64"
+#     # optimizations
+#     cache_repo: "radixdlt/build-cache"
+#     cache_tag_suffix: "babylon-node-pr"
+#     role_to_assume: "arn:aws:iam::1234567890:role/rolename"
+#     enable_dockerhub: "true"
+#     enable_trivy: "false"
+#     enable_pr_comment: "false"
+#   secrets:
+#     workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
+#     service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
