@@ -36,7 +36,7 @@ cache-to: |
 type=registry,ref=europe-west2-docker.pkg.dev/dev-container-repo/eu-cache-repo/${{ inputs.image_name }}:build-cache-${{ inputs.cache_tag_suffix }},mode=max 
 ```
 
-### restore_artifact, artifact_name, artifact_location
+#### restore_artifact, artifact_name, artifact_location
 These parameters come together to allow downloading of pre build artifacts for copying into the docker image. 
 Use this if your docker build requires local files.
 
@@ -53,7 +53,7 @@ Use this if your docker build requires local files.
     run: ls -R ${{ inputs.artifact_location }}
 ```
 
-### authentication
+#### authentication
 
 Authentication to Google Cloud is mandatory and requires two secrets to be available to Github. GCP_WORKLOAD_IDP and GCP_SERVICE_ACCOUNT. The values of these should be the same in each repository. Authorization for each repository is done in the Google Cloud console. Contact @team-devops in Slack to add your new Repo.
 
