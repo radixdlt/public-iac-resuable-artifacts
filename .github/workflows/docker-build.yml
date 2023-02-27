@@ -36,8 +36,13 @@ on:
         default: 'default'
       tag:
         description: 'The tag to push'
-        required: true
+        required: false
         type: string
+        default: 'default'
+      tags:
+        description: 'List of tags as key-value pair attributes'
+        required: false
+        default: 'default'
       labels:
         description: 'The labels to push'
         required: false
@@ -195,7 +200,48 @@ jobs:
       # Building the image
       # This is version v4.0.0
       # https://github.com/docker/build-push-action/releases/tag/v4.0.0
-      - name: Build and push
+      
+      - if: inputs.tags != 'default'
+        name: Setup tags with metadata-action
+        id: metadata
+        uses: docker/metadata-action@57396166ad8aefe6098280995947635806a0e6ea
+        with:
+          images: ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}
+          tags: ${{ inputs.tags }}
+      - if: inputs.tags != 'default' && inputs.tags == 'default'
+        name: Build and push
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          file: ${{ inputs.dockerfile }}
+          context: ${{ inputs.context }}
+          push: true
+          platforms: ${{ inputs.platforms }}
+          cache-from: |
+            type=registry,ref=europe-west2-docker.pkg.dev/dev-container-repo/eu-cache-repo/${{ inputs.image_name }}:build-cache-${{ inputs.cache_tag_suffix }} 
+          cache-to: |
+            type=registry,ref=europe-west2-docker.pkg.dev/dev-container-repo/eu-cache-repo/${{ inputs.image_name }}:build-cache-${{ inputs.cache_tag_suffix }},mode=max 
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+
+      - if: inputs.tags == 'default' && inputs.tags != 'default'
+        name: Build and push
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          file: ${{ inputs.dockerfile }}
+          context: ${{ inputs.context }}
+          push: true
+          platforms: ${{ inputs.platforms }}
+          cache-from: |
+            type=registry,ref=europe-west2-docker.pkg.dev/dev-container-repo/eu-cache-repo/${{ inputs.image_name }}:build-cache-${{ inputs.cache_tag_suffix }} 
+          cache-to: |
+            type=registry,ref=europe-west2-docker.pkg.dev/dev-container-repo/eu-cache-repo/${{ inputs.image_name }}:build-cache-${{ inputs.cache_tag_suffix }},mode=max 
+          tags: |
+            ${{ steps.metadata.outputs.tags }}
+            ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
+          labels: ${{ inputs.labels }}
+      
+      - if: inputs.tags != 'default' && inputs.tags != 'default'
+        name: Build and push
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           file: ${{ inputs.dockerfile }}
