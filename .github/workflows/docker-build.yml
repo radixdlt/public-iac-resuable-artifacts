@@ -145,6 +145,7 @@ jobs:
       - name: 'Register gcloud as Docker credential helper'
         run: |
             gcloud auth configure-docker -q
+            gcloud artifacts repositories list --project=dev-container-repo
       
       ## Dockerhub
       - if: inputs.enable_dockerhub == 'true'
