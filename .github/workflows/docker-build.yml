@@ -42,6 +42,7 @@ on:
       tags:
         description: 'List of tags as key-value pair attributes'
         required: false
+        type: string
         default: 'default'
       labels:
         description: 'The labels to push'
