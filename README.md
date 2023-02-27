@@ -12,7 +12,7 @@ Devops and Security profit from a single point of maintenance in case of require
 
 ### Parameters
 
-#### image_registry, image_organization, image_name, tag, labels
+#### image_registry, image_organization, image_name, tag, labels, platforms
 
 Hopefully self-explaining parameters to specify the docker image tag. 
 ```
@@ -20,9 +20,9 @@ tags: |
   ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
 ```
 
-image_name is also used to specify the name of the cache-repo.
+`image_name` is also used to specify the name of the cache-repo.
 
-#### cache_tag_suffix 
+#### cache_tag_suffix 
 Cache is always pushed to the cache artifact registry. This can only be configures by changing the cache tag suffix.
 Use this to seperate workstreams that are vastly different from each other and tend to disrupt each others cache. 
 That results in longer build times for both.
