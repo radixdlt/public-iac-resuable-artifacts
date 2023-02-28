@@ -117,6 +117,8 @@ jobs:
     environment: ${{ inputs.environment }}
     runs-on: ${{ inputs.runs_on }}
     steps:
+      - name: Dump context
+        uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
       # This is version v3.3.0 
       # https://github.com/actions/checkout/releases/tag/v3.3.0 
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c 
@@ -210,7 +212,7 @@ jobs:
           images: ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}
           tags: ${{ inputs.tags }}
       - if: inputs.tags != 'default' && inputs.tags == 'default'
-        name: Build and push
+        name: Build and push with metadata-action tags
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           file: ${{ inputs.dockerfile }}
@@ -225,7 +227,7 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
 
       - if: inputs.tags == 'default' && inputs.tags != 'default'
-        name: Build and push
+        name: Build and push with single tag
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           file: ${{ inputs.dockerfile }}
@@ -242,7 +244,7 @@ jobs:
           labels: ${{ inputs.labels }}
       
       - if: inputs.tags != 'default' && inputs.tags != 'default'
-        name: Build and push
+        name: Build and push with metadata-action tags and single tag
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           file: ${{ inputs.dockerfile }}
