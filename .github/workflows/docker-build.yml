@@ -29,6 +29,7 @@ on:
         description: 'The platforms to build the image on'
         required: true
         type: string
+        default: 'linux/amd64'
       cache_tag_suffix:
         description: 'The tag of the cache image'
         required: false
@@ -102,7 +103,6 @@ on:
         required: false
         type: string
         default: "ubuntu-22.04"
-
 jobs:
   build-and-push:
     permissions:
@@ -111,6 +111,10 @@ jobs:
       pull-requests: read
     environment: ${{ inputs.environment }}
     runs-on: ${{ inputs.runs_on }}
+    outputs:
+      tags: ${{ steps.metadata.outputs.tags }}
+      labels: ${{ steps.metadata.outputs.labels }}
+      json: ${{ steps.metadata.outputs.json }}
     steps:
       - name: Dump context
         uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
@@ -283,3 +287,8 @@ jobs:
 #   secrets:
 #     workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
 #     service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+# outputs:
+# api-tags: ${{ steps.docker-tags-api.outputs.tags }}
+# api-labels: ${{ steps.docker-tags-api.outputs.labels }}
+# api-json: ${{ steps.docker-tags-api.outputs.json }}
