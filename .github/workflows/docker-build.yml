@@ -103,6 +103,16 @@ on:
         required: false
         type: string
         default: "ubuntu-22.04"
+    outputs:
+      tags:
+        description: "The tags from metadata-action"
+        value: ${{ jobs.build-and-push.outputs.tags }}
+      labels:
+        description: "The labels from metadata-action"
+        value: ${{ jobs.build-and-push.outputs.labels }}
+      json:
+        description: "The json from metadata-action"
+        value: ${{ jobs.build-and-push.outputs.json }}
 jobs:
   build-and-push:
     permissions:
