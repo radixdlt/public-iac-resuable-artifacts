@@ -39,7 +39,7 @@ on:
         description: 'The tag to push'
         required: false
         type: string
-        default: 'default'
+        default: ''
       tags:
         description: 'List of tags as key-value pair attributes'
         required: false
@@ -57,6 +57,7 @@ on:
         description: 'The registry to push the image to'
         required: true
         type: string
+        default: "docker.io" 
       restore_artifact:
         description: 'Wether or not to restore artifacts'
         required: false
@@ -221,6 +222,8 @@ jobs:
           tags: 
             type=raw,value=${{ inputs.tag }}
             ${{ inputs.tags }}
+          flavor: |
+            latest=false
       - name: Build and push with metadata-action tags
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
@@ -290,13 +293,13 @@ jobs:
 #     platforms: "linux/amd64"
 #     # optimizations
 #     cache_tag_suffix: "babylon-node-pr"
-#     role_to_assume: "arn:aws:iam::1234567890:role/rolename"
 #     enable_dockerhub: "true"
 #     enable_trivy: "false"
 #     enable_pr_comment: "false"
 #   secrets:
 #     workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
 #     service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+#     role_to_assume: ${{ secrets.DOCKERHUB_RELEASER_ROLE }}
 
 # outputs:
 # api-tags: ${{ steps.docker-tags-api.outputs.tags }}

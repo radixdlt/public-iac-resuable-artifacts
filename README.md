@@ -59,13 +59,100 @@ Use this if your docker build requires local files.
 
 Authentication to Google Cloud is mandatory and requires two secrets to be available to Github. GCP_WORKLOAD_IDP and GCP_SERVICE_ACCOUNT. The values of these should be the same in each repository. Authorization for each repository is done in the Google Cloud console. Contact @team-devops in Slack to add your new Repo.
 
-In case of a public image push, you will need docker credentials. These require the use of environment, enable_dockerhub and specify the role_to_assume. The role to assume will always be the same and will move to secrets in the future. The environment should be specified as release and be a protected environment that only allows access to protected branches. The AWS Role enforces this. This prevents pull_requests from malicious parties to push images to our public docker registry.
+In case of a public image push, you will need docker credentials. These require the use of `environment`, `enable_dockerhub` and specify the `role_to_assume`. The role to assume will always be the same and will move to secrets in the future. The environment should be specified as release and be a protected environment that only allows access to protected branches. The AWS Role enforces this. This prevents pull_requests from malicious parties to push images to our public docker registry.
+
+This is the default registry `image_registry: "docker.io"` used for dockerhub.
 
 ```    
     environment: "release"
-    role_to_assume: "arn:aws:iam::1234567890:role/rolename"
     enable_dockerhub: "true"
   secrets:
     workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
     service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+    role_to_assume: ${{ secrets.DOCKERHUB_RELEASER_ROLE }}
+```
+
+### all steps
+
+#### linting
+
+Lints the specified Dockerfile. It does not fail on findings but annotates them in the PR. So the workflow will have a list of errors attached to them. These might clutter and hide other errors. A motivation to fix the findings. If the finding is understood but does not seem applicable. You can always ignore them. See the hadolint github page for more information:
+
+https://github.com/hadolint/hadolint#global-ignores
+
+#### linting restoring artifacts
+
+We execute `actions/download-artifact` to fetchone artifact that you need to build the dockerfile. Afterwards the content of the directory is shown.
+Enable and configure with:
+
+```
+restore_artifact: "true"
+artifact_name: "somename"
+artifact_location: "./"
+```
+
+#### setup tags
+
+The action `docker/metadata-action` is executed to build tags. This can be either configured by using the metadata-action syntax in the field `tags` or by specifying a single value in `tag`. 
+
+```
+tag: ${{ needs.setup-tags.outputs.database-migrations-tag }}
+tags: |
+  type=raw,value=somestuff
+  type=raw,value={{branch}}-{{sha}}
+```
+
+In case these options do not fit you. Try this approach:
+
+```
+setup-tags:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+    - name: Update version string in app
+      id: update_version_string
+      run: |
+        echo "tag=value" >> $GITHUB_OUTPUTS
+```
+
+#### download artifacts
+
+We execute 'actions/download-artifact@v3' to fetchone artifact that you need to build the dockerfile. Afterwards the content of the directory is shown.
+Enable and configure with:
+
+```
+restore_artifact: "true"
+artifact_name: "somename"
+artifact_location: "./"
+
+### full example
+```
+  build_push_container:
+    needs: 
+      - build_deb
+    uses: radixdlt/public-iac-resuable-artifacts/.github/workflows/ ocker-build.yml@main
+    with:
+      environment: "release"
+      # image information
+      image_registry: "eu.gcr.io"
+      image_organization: "dev-container-repo"
+      image_name: "babylon-node"
+      tag: "latest"
+      labels: ""
+      # build information
+      restore_artifact: "true"
+      artifact_name: "deb4docker"
+      artifact_location: "docker"
+      context: "docker"
+      dockerfile: "./docker/Dockerfile.core"
+      platforms: "linux/amd64"
+      # optimizations
+      cache_tag_suffix: "babylon-node-pr"
+      enable_dockerhub: "true"
+      enable_trivy: "false"
+      enable_pr_comment: "false"
+    secrets:
+      workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDP }}
+      service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      role_to_assume: ${{ secrets.DOCKERHUB_RELEASER_ROLE }}
 ```
