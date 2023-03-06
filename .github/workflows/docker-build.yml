@@ -251,10 +251,16 @@ jobs:
       
       # ## image scanning
       - if: inputs.enable_trivy == 'true'
+        name: Generate tarball from image
+        run: |
+          docker pull ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
+          docker save -o vuln-image.tar ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
+          
+      - if: inputs.enable_trivy == 'true'
         name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}'
+          input: /github/workspace/vuln-image.tar
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '0'
@@ -262,7 +268,7 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.gcr-auth.outputs.credentials_file_path }}
       - if: inputs.enable_trivy == 'true'
         name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v1
