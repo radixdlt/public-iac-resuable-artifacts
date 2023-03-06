@@ -44,7 +44,7 @@ on:
         description: 'List of tags as key-value pair attributes'
         required: false
         type: string
-        default: 'default'
+        default: ''
       image_name:
         description: 'The name of the image'
         required: true
