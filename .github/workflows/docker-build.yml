@@ -75,6 +75,7 @@ on:
         description: 'The folder from which to execute the build command'
         required: true
         type: string
+        default: "."
       dockerfile:
         description: 'The path to the dockerfile to build'
         required: true
