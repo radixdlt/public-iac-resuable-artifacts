@@ -22,7 +22,7 @@ tags: |
 
 `image_name` is also used to specify the name of the cache-repo.
 
-For dockerhub specify `registry.hub.docker.com` as `image_registry`.
+For dockerhub specify `docker.io` as `image_registry`.
 
 #### cache_tag_suffix 
 Cache is always pushed to the cache artifact registry. This can only be configures by changing the cache tag suffix.
