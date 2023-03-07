@@ -55,7 +55,7 @@ on:
         type: string
       image_registry:
         description: 'The registry to push the image to'
-        required: true
+        required: false
         type: string
         default: "docker.io" 
       restore_artifact:
