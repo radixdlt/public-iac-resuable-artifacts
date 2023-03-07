@@ -73,7 +73,7 @@ on:
         type: string
       context:
         description: 'The folder from which to execute the build command'
-        required: true
+        required: false
         type: string
         default: "."
       dockerfile:
