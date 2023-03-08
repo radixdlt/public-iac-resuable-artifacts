@@ -16,9 +16,18 @@ Devops and Security profit from a single point of maintenance in case of require
 
 Hopefully self-explaining parameters to specify the docker image tag. 
 ```
-tags: |
-  ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
+- name: Setup tags with metadata-action
+  id: metadata
+  uses: docker/metadata-action@57396166ad8aefe6098280995947635806a0e6ea
+  with:
+    images: ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}
+    tags: 
+      type=raw,value=${{ inputs.tag }}
+      ${{ inputs.tags }}
+    flavor: |
+      latest=false
 ```
+There is the input parameter tag, which accepts a single tag to push. This is useful if the tag is static, simple or precalculated in a different step.  Alternatively or in conjuction there is the input parameter tags, which allows mutliple tags in the form described [here](https://github.com/docker/metadata-action#readme)
 
 `image_name` is also used to specify the name of the cache-repo.
 
