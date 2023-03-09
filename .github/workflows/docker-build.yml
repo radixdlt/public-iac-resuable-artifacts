@@ -220,7 +220,7 @@ jobs:
         uses: docker/metadata-action@57396166ad8aefe6098280995947635806a0e6ea
         with:
           images: ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}
-          tags: 
+          tags: |
             type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
             ${{ inputs.tags }}
           flavor: |
