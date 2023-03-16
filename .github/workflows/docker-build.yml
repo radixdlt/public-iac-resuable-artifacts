@@ -105,6 +105,16 @@ on:
         required: false
         type: string
         default: "ubuntu-22.04"
+      build-args: 
+        description: 'Build arguments'
+        required: false
+        type: string
+        default: ""
+      target: 
+        description: 'Build target for multistage builds'
+        required: false
+        type: string
+        default: ""
     outputs:
       tags:
         description: "The tags from metadata-action"
@@ -214,7 +224,6 @@ jobs:
       # Building the image
       # This is version v4.0.0
       # https://github.com/docker/build-push-action/releases/tag/v4.0.0
-      
       - name: Setup tags with metadata-action
         id: metadata
         uses: docker/metadata-action@57396166ad8aefe6098280995947635806a0e6ea
@@ -238,6 +247,8 @@ jobs:
             type=registry,ref=europe-west2-docker.pkg.dev/dev-container-repo/eu-cache-repo/${{ inputs.image_name }}:build-cache-${{ inputs.cache_tag_suffix }},mode=max 
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
+          build-args: ${{ inputs.build-args }}
+          target: ${{ inputs.target }}
   
       # # Post Processing (needs more testing)
       # ## adding image tags to pull request
