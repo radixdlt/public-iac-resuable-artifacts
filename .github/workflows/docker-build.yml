@@ -45,8 +45,13 @@ on:
         required: false
         type: string
         default: ''
+      flavor:
+        description: 'List of flavor configs as key-value pair attributes'
+        required: false
+        type: string
+        default: ''
       flavors:
-        description: 'List of flavors as key-value pair attributes'
+        description: 'List of flavor configs as key-value pair attributes'
         required: false
         type: string
         default: ''
@@ -240,6 +245,7 @@ jobs:
           flavor: |
             latest=false
             ${{ inputs.flavor }}
+            ${{ inputs.flavors }}
       - name: Restore cached image-cache
         id: cache-image-restore
         uses: actions/cache/restore@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
