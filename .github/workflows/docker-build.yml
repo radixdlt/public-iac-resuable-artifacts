@@ -125,6 +125,11 @@ on:
         required: false
         type: string
         default: ""
+      provenance:
+        description: 'The provenance string supplied to docker-build-push'
+        required: false
+        type: string
+        default: 'true'
     outputs:
       tags:
         description: "The tags from metadata-action"
@@ -267,6 +272,7 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
           build-args: ${{ inputs.build-args }}
           target: ${{ inputs.target }}
+          provenance: ${{ inputs.provenance }}
       - name: Save Image cache
         id: cache-image-save
         uses: actions/cache/save@v3
