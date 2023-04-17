@@ -240,6 +240,12 @@ jobs:
           flavor: |
             latest=false
             ${{ inputs.flavor }}
+      - name: Restore cached image-cache
+        id: cache-image-restore
+        uses: actions/cache/restore@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
+        with:
+          path: outputs/cache/docker
+          key: ${{ inputs.image_name }}-${{ inputs.cache_tag_suffix }}-${{ hashFiles(inputs.dockerfile) }}
       - name: Build and push with metadata-action tags
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
@@ -248,13 +254,19 @@ jobs:
           push: true
           platforms: ${{ inputs.platforms }}
           cache-from: |
-            type=registry,ref=europe-west2-docker.pkg.dev/dev-container-repo/eu-cache-repo/${{ inputs.image_name }}:build-cache-${{ inputs.cache_tag_suffix }} 
+            type=local,src=outputs/cache/docker
           cache-to: |
-            type=registry,ref=europe-west2-docker.pkg.dev/dev-container-repo/eu-cache-repo/${{ inputs.image_name }}:build-cache-${{ inputs.cache_tag_suffix }},mode=max 
+            type=local,dest=outputs/cache/docker,mode=max
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           build-args: ${{ inputs.build-args }}
           target: ${{ inputs.target }}
+      - name: Save Image cache
+        id: cache-image-save
+        uses: actions/cache/save@v3
+        with:
+          path: outputs/cache/docker
+          key: ${{ steps.cache-image-restore.outputs.cache-primary-key }}
   
       # # Post Processing (needs more testing)
       # ## adding image tags to pull request
