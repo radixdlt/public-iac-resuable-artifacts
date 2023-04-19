@@ -81,6 +81,16 @@ on:
         description: 'Directory to store the artifact in'
         required: false
         type: string
+      artifacts_extract_location:
+        description: 'Path to extracted artifacts to'
+        required: false
+        type: string
+        default: ''
+      artifacts_extract_filename:
+        description: 'Name of the artifact to extracted'
+        required: false
+        type: string
+        default: ''
       context:
         description: 'The folder from which to execute the build command'
         required: false
@@ -170,14 +180,18 @@ jobs:
       # Restoring Artifacts build in a previous step
       - if: inputs.restore_artifact == 'true'
         name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.artifact_location }}
       - if: inputs.restore_artifact == 'true'
         name: Display structure of downloaded files
         run: ls -R ${{ inputs.artifact_location }}
-
+      - if: inputs.artifacts_extract_location != ''
+        uses: montudor/action-zip@0852c26906e00f8a315c704958823928d8018b28
+        with:
+          args: unzip -qq ${{ inputs.artifact_location }}/${{ inputs.artifacts_extract_filename }} -d ${{ inputs.artifacts_extract_location }}
+          
       # Authentication
       ## Google
       # This is version v1.0.0
