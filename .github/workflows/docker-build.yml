@@ -255,7 +255,7 @@ jobs:
         id: cache-image-restore
         uses: actions/cache/restore@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
-          path: outputs/cache/docker
+          path: /tmp/outputs/cache/docker
           key: ${{ inputs.image_name }}-${{ inputs.cache_tag_suffix }}-${{ hashFiles(inputs.dockerfile) }}
       - name: Build and push with metadata-action tags
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
@@ -265,9 +265,9 @@ jobs:
           push: true
           platforms: ${{ inputs.platforms }}
           cache-from: |
-            type=local,src=outputs/cache/docker
+            type=local,src=/tmp/outputs/cache/docker
           cache-to: |
-            type=local,dest=outputs/cache/docker,mode=max
+            type=local,dest=/tmp/outputs/cache/docker,mode=max
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           build-args: ${{ inputs.build-args }}
@@ -277,7 +277,7 @@ jobs:
         id: cache-image-save
         uses: actions/cache/save@v3
         with:
-          path: outputs/cache/docker
+          path: /tmp/outputs/cache/docker
           key: ${{ steps.cache-image-restore.outputs.cache-primary-key }}
   
       # # Post Processing (needs more testing)
