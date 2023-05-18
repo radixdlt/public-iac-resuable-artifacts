@@ -1,0 +1,22 @@
+name: connect-to-tailnet
+
+inputs: {}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Fetch Tailscale secrets"
+      uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+      with:
+        role_name: "arn:aws:iam::308190735829:role/gh-common-secrets-read-access"
+        app_name: "tailnet-connect"
+        step_name: setup-tailnet
+        secret_prefix: "TAILSCALE"
+        region: "eu-west-2"
+        secret_name: "arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/tailscale-jl5Bqe"
+        parse_json: true
+
+    - name: "Connect to Tailnet"
+      uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
+      with:
+        authkey: ${{ env.TAILSCALE_AUTHKEY }}
