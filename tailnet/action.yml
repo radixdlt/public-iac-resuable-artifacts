@@ -1,0 +1,31 @@
+name: connect-to-tailnet
+
+inputs:
+  role_name:
+    type: string
+    required: true
+  region:
+    type: string
+    required: false
+  secret_name:
+    type: string
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Fetch Tailscale secrets"
+      uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+      with:
+        role_name: ${{ inputs.role_name }}
+        app_name: "tailnet-connect"
+        step_name: setup-tailnet
+        secret_prefix: "TAILSCALE"
+        region: ${{ inputs.region }}
+        secret_name: ${{ inputs.secret_name }}
+        parse_json: true
+
+    - name: "Connect to Tailnet"
+      uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
+      with:
+        authkey: ${{ env.TAILSCALE_AUTHKEY }}
