@@ -202,6 +202,8 @@ jobs:
           password: ${{ steps.gcr-auth.outputs.access_token }}
 
       ## Dockerhub
+
+      ## Private Repo credentials
       # This is version v1.7.0
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
       - name: "Configure AWS credentials"
@@ -218,6 +220,31 @@ jobs:
       # This is version v2.1.0
       # https://github.com/docker/login-action/releases/tag/v2.1.0
       - name: Login to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{env.DOCKERHUB_USERNAME}}
+          password: ${{env.DOCKERHUB_TOKEN}}
+
+      ## Public Repo credentials
+      # This is version v1.7.0
+      # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
+      - if: inputs.enable_dockerhub == 'true'
+        name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
+        with:
+          role-to-assume:  ${{ secrets.role_to_assume }}
+          aws-region: eu-west-2
+      - if: inputs.enable_dockerhub == 'true'
+        name: Read secrets from AWS Secrets Manager into environment variables
+        uses: aws-actions/aws-secretsmanager-get-secrets@v1
+        with:
+          secret-ids: |
+            DOCKERHUB, github-actions/rdxworks/dockerhub-images/release-credentials
+          parse-json-secrets: true
+      # This is version v2.1.0
+      # https://github.com/docker/login-action/releases/tag/v2.1.0
+      - if: inputs.enable_dockerhub == 'true'
+        name: Login to Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
           username: ${{env.DOCKERHUB_USERNAME}}
