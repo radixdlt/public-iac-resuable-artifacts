@@ -202,6 +202,30 @@ jobs:
           password: ${{ steps.gcr-auth.outputs.access_token }}
 
       ## Dockerhub
+
+      ## Private Repo credentials
+      # This is version v1.7.0
+      # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
+      - name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
+        with:
+          role-to-assume: arn:aws:iam::308190735829:role/gh-common-secrets-read-access
+          aws-region: eu-west-2
+      - name: Read secrets from AWS Secrets Manager into environment variables
+        uses: aws-actions/aws-secretsmanager-get-secrets@v1
+        with:
+          secret-ids: |
+            DOCKERHUB, github-actions/common/dockerhub-credentials
+          parse-json-secrets: true
+      # This is version v2.1.0
+      # https://github.com/docker/login-action/releases/tag/v2.1.0
+      - name: Login to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{env.DOCKERHUB_USERNAME}}
+          password: ${{env.DOCKERHUB_TOKEN}}
+
+      ## Public Repo credentials
       # This is version v1.7.0
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
       - if: inputs.enable_dockerhub == 'true'
@@ -242,6 +266,13 @@ jobs:
           version: latest
           endpoint: builders
 
+      - name: Check visibility
+        id: checkvisibility
+        run: |
+          echo "dhimageprefix=" >> "$GITHUB_OUTPUT"
+          export VISIBILITY=$(curl -L  -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ github.token }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository }} | jq -r .visibility)
+          if [[ $VISIBILITY == "public" ]]; then echo "dhimageprefix=private-" >> "$GITHUB_OUTPUT"; fi
+
       # Building the image
       # This is version v4.0.0
       # https://github.com/docker/build-push-action/releases/tag/v4.0.0
@@ -249,7 +280,9 @@ jobs:
         id: metadata
         uses: docker/metadata-action@57396166ad8aefe6098280995947635806a0e6ea
         with:
-          images: ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}
+          images: |
+            ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}
+            docker.io/radixdlt/${{steps.checkvisibility.outputs.dhimageprefix}}${{ inputs.image_name }}
           tags: |
             type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
             ${{ inputs.tags }}
