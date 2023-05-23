@@ -26,6 +26,6 @@ runs:
         parse_json: true
 
     - name: "Connect to Tailnet"
-      uses: tailscale/github-action@ce41a99162202a647a4b24c30c558a567b926709
+      uses: tailscale/github-action@8b804aa882ac3429b804a2a22f9803a2101a0db9
       with:
         authkey: ${{ env.TAILSCALE_AUTHKEY }}
