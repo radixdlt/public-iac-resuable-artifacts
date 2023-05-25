@@ -205,9 +205,9 @@ jobs:
 
       ## Private Repo credentials
       # This is version v1.7.0
-      # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
+      # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v2.0.0
       - name: "Configure AWS credentials"
-        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
+        uses: aws-actions/configure-aws-credentials@e1e17a757e536f70e52b5a12b2e8d1d1c60e04ef
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-common-secrets-read-access
           aws-region: eu-west-2
