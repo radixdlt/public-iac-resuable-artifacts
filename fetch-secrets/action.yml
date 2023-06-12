@@ -7,6 +7,7 @@ inputs:
   region:
     type: string
     required: false
+    default: "eu-west-2"
   app_name:
     type: string
     required: true
