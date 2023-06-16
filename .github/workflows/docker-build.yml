@@ -320,18 +320,12 @@ jobs:
           message: |
             Docker tags
             ${{ steps.metadata.outputs.tags }}
-            
-            Docker labels
-            ${{ steps.metadata.outputs.labels }}
           comment_tag: dockerTags${{ inputs.image_name }}
       - name: Add docker tags to GH Summary
         id: ghsummary
         run: |
           echo "Docker tags" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.metadata.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Docker labels" >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.metadata.outputs.labels }}" >> $GITHUB_STEP_SUMMARY
       
       # ## image scanning
       # - if: inputs.enable_trivy == 'true'
