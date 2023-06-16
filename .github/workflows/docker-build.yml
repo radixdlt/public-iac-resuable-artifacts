@@ -162,10 +162,10 @@ jobs:
           fetch-depth: 0
       # This is version v3.1.0 
       # https://github.com/hadolint/hadolint-action/releases/tag/v3.1.0
-      - uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf
-        with:
-          dockerfile: ${{ inputs.dockerfile }}
-          no-fail: true
+      # - uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf
+      #   with:
+      #     dockerfile: ${{ inputs.dockerfile }}
+      #     no-fail: true
 
       # Restoring Artifacts build in a previous step
       - if: inputs.restore_artifact == 'true'
@@ -266,13 +266,6 @@ jobs:
           version: latest
           endpoint: builders
 
-      - name: Check visibility
-        id: checkvisibility
-        run: |
-          echo "dhimageprefix=" >> "$GITHUB_OUTPUT"
-          export VISIBILITY=$(curl -L  -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ github.token }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository }} | jq -r .visibility)
-          if [[ $VISIBILITY == "public" ]]; then echo "dhimageprefix=private-" >> "$GITHUB_OUTPUT"; fi
-
       # Building the image
       # This is version v4.0.0
       # https://github.com/docker/build-push-action/releases/tag/v4.0.0
@@ -282,7 +275,6 @@ jobs:
         with:
           images: |
             ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}
-            docker.io/radixdlt/${{steps.checkvisibility.outputs.dhimageprefix}}${{ inputs.image_name }}
           tags: |
             type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
             ${{ inputs.tags }}
