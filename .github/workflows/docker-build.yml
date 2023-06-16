@@ -145,7 +145,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      pull-requests: read
+      pull-requests: write
     environment: ${{ inputs.environment }}
     runs-on: ${{ inputs.runs_on }}
     outputs:
@@ -278,7 +278,7 @@ jobs:
       # https://github.com/docker/build-push-action/releases/tag/v4.0.0
       - name: Setup tags with metadata-action
         id: metadata
-        uses: docker/metadata-action@57396166ad8aefe6098280995947635806a0e6ea
+        uses: docker/metadata-action@818d4b7b91585d195f67373fd9cb0332e31a7175
         with:
           images: |
             ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}
@@ -319,39 +319,50 @@ jobs:
           path: /tmp/outputs/cache/docker
           key: ${{ steps.cache-image-restore.outputs.cache-primary-key }}
   
-      # # Post Processing (needs more testing)
-      # ## adding image tags to pull request
-      # - if: github.event_name == 'pull_request' && inputs.enable_pr_comment == 'true'
-      #   name: Add docker tags to PR comment
-      #   uses: thollander/actions-comment-pull-request@632cf9ce90574d125be56b5f3405cda41a84e2fd
-      #   with:
-      #     message: |
-      #       Docker tags
-      #       ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
-      #     comment_tag: dockerTags
+      # Post Processing (needs more testing)
+      ## adding image tags to pull request
+      - if: github.event_name == 'pull_request' && inputs.enable_pr_comment == 'true'
+        name: Add docker tags to PR comment
+        uses: thollander/actions-comment-pull-request@632cf9ce90574d125be56b5f3405cda41a84e2fd
+        with:
+          message: |
+            Docker tags
+            ${{ steps.metadata.outputs.tags }}
+            
+            Docker labels
+            ${{ steps.metadata.outputs.labels }}
+          comment_tag: dockerTags
+      - name: Add docker tags to GH Summary
+        id: ghsummary
+        run: |
+          echo "Docker tags" >> GH_SUMMARY
+          echo "${{ steps.metadata.outputs.tags }}" >> GH_SUMMARY
+          echo "" >> GH_SUMMARY
+          echo "Docker labels" >> GH_SUMMARY
+          echo "${{ steps.metadata.outputs.labels }}" >> GH_SUMMARY
       
       # ## image scanning
-      - if: inputs.enable_trivy == 'true'
-        name: Generate tarball from image
-        run: |
-          docker pull ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
-          docker save -o vuln-image.tar ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
-      - if: inputs.enable_trivy == 'true'
-        name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          input: /github/workspace/vuln-image.tar
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-      - if: inputs.enable_trivy == 'true'
-        name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy-results.sarif'
+      # - if: inputs.enable_trivy == 'true'
+      #   name: Generate tarball from image
+      #   run: |
+      #     docker pull ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
+      #     docker save -o vuln-image.tar ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
+      # - if: inputs.enable_trivy == 'true'
+      #   name: Run Trivy vulnerability scanner
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     input: /github/workspace/vuln-image.tar
+      #     format: 'sarif'
+      #     output: 'trivy-results.sarif'
+      #     exit-code: '0'
+      #     ignore-unfixed: true
+      #     vuln-type: 'os,library'
+      #     severity: 'CRITICAL,HIGH'
+      # - if: inputs.enable_trivy == 'true'
+      #   name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: 'trivy-results.sarif'
 
 
 # Example Usage
