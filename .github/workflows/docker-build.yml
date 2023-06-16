@@ -331,7 +331,7 @@ jobs:
             
             Docker labels
             ${{ steps.metadata.outputs.labels }}
-          comment_tag: dockerTags
+          comment_tag: dockerTags${{ inputs.image_name }}
       - name: Add docker tags to GH Summary
         id: ghsummary
         run: |
