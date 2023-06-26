@@ -154,10 +154,10 @@ jobs:
       json: ${{ steps.metadata.outputs.json }}
     steps:
       - name: Dump context
-        uses: crazy-max/ghaction-dump-context@516dbb0c760f39b4cdd750ae095f1688780f68f4
-      # This is version v3.3.0 
-      # https://github.com/actions/checkout/releases/tag/v3.3.0 
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c 
+        uses: crazy-max/ghaction-dump-context@158bbf4d6158a44a7e13f76295dc55a69e481a6e
+      # This is version v3.5.3 
+      # https://github.com/actions/checkout/releases/tag/v3.5.3 
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 
         with:
           fetch-depth: 0
       # This is version v3.1.0 
@@ -170,7 +170,7 @@ jobs:
       # Restoring Artifacts build in a previous step
       - if: inputs.restore_artifact == 'true'
         name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.artifact_location }}
@@ -180,10 +180,10 @@ jobs:
 
       # Authentication
       ## Google
-      # This is version v1.0.0
-      # https://github.com/google-github-actions/auth/releases/tag/v1.0.0
+      # This is version v1.1.1
+      # https://github.com/google-github-actions/auth/releases/tag/v1.1.1
       - id: gcr-auth
-        uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d
+        uses: google-github-actions/auth@35b0e87d162680511bf346c299f71c9c5c379033
         with:
           workload_identity_provider: ${{ secrets.workload_identity_provider }}
           service_account: ${{ secrets.service_account }}
@@ -192,10 +192,10 @@ jobs:
       - name: 'Register gcloud as Docker credential helper'
         run: |
             gcloud auth configure-docker -q
-      # This is version v2.1.0
-      # https://github.com/docker/login-action/releases/tag/v2.1.0
+      # This is version v2.2.0
+      # https://github.com/docker/login-action/releases/tag/v2.2.0
       - name: Login to Artifact Registry
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
         with:
           registry: europe-west2-docker.pkg.dev
           username: oauth2accesstoken
@@ -204,15 +204,17 @@ jobs:
       ## Dockerhub
 
       ## Private Repo credentials
-      # This is version v1.7.0
-      # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v2.0.0
+      # This is version v2.2.0
+      # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v2.2.0
       - name: "Configure AWS credentials"
-        uses: aws-actions/configure-aws-credentials@e1e17a757e536f70e52b5a12b2e8d1d1c60e04ef
+        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-common-secrets-read-access
           aws-region: eu-west-2
+      # This is version v1.0.4
+      # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.0.4
       - name: Read secrets from AWS Secrets Manager into environment variables
-        uses: aws-actions/aws-secretsmanager-get-secrets@v1
+        uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
         with:
           secret-ids: |
             DOCKERHUB_PRIVATE, github-actions/common/dockerhub-credentials
@@ -233,10 +235,10 @@ jobs:
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
         with:
           role-to-assume: ${{ secrets.role_to_assume }}
-          aws-region: eu-west-2
+          aws-region: eu-west-2  
       - if: inputs.enable_dockerhub == 'true'
         name: Read secrets from AWS Secrets Manager into environment variables
-        uses: aws-actions/aws-secretsmanager-get-secrets@v1
+        uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
         with:
           secret-ids: |
             DOCKERHUB_PUBLIC, github-actions/rdxworks/dockerhub-images/release-credentials
