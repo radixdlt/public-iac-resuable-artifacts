@@ -215,15 +215,15 @@ jobs:
         uses: aws-actions/aws-secretsmanager-get-secrets@v1
         with:
           secret-ids: |
-            DOCKERHUB, github-actions/common/dockerhub-credentials
+            DOCKERHUB_PRIVATE, github-actions/common/dockerhub-credentials
           parse-json-secrets: true
       # This is version v2.1.0
       # https://github.com/docker/login-action/releases/tag/v2.1.0
       - name: Login to Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
-          username: ${{env.DOCKERHUB_USERNAME}}
-          password: ${{env.DOCKERHUB_TOKEN}}
+          username: ${{env.DOCKERHUB_PRIVATE_USERNAME}}
+          password: ${{env.DOCKERHUB_PRIVATE_TOKEN}}
 
       ## Public Repo credentials
       # This is version v1.7.0
@@ -239,7 +239,7 @@ jobs:
         uses: aws-actions/aws-secretsmanager-get-secrets@v1
         with:
           secret-ids: |
-            DOCKERHUB, github-actions/rdxworks/dockerhub-images/release-credentials
+            DOCKERHUB_PUBLIC, github-actions/rdxworks/dockerhub-images/release-credentials
           parse-json-secrets: true
       # This is version v2.1.0
       # https://github.com/docker/login-action/releases/tag/v2.1.0
@@ -247,8 +247,8 @@ jobs:
         name: Login to Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
-          username: ${{env.DOCKERHUB_USERNAME}}
-          password: ${{env.DOCKERHUB_TOKEN}}
+          username: ${{env.DOCKERHUB_PUBLIC_USERNAME}}
+          password: ${{env.DOCKERHUB_PUBLIC_TOKEN}}
 
       # Setting up Build environment
       # This is version v2.1.0
