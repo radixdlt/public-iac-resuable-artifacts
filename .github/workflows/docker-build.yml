@@ -153,8 +153,6 @@ jobs:
       labels: ${{ steps.metadata.outputs.labels }}
       json: ${{ steps.metadata.outputs.json }}
     steps:
-      - name: Dump context
-        uses: crazy-max/ghaction-dump-context@158bbf4d6158a44a7e13f76295dc55a69e481a6e
       # This is version v3.5.3 
       # https://github.com/actions/checkout/releases/tag/v3.5.3 
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 
