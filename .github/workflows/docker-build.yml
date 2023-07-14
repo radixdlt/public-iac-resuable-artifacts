@@ -347,7 +347,7 @@ jobs:
         name: Snyk image scan
         uses: snyk/actions/docker@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
         with:
-          image: ${{ inputs.tag }}
+          image: ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
           args: --file=${{ inputs.dockerfile }} --severity-threshold=critical
       
       # ## image scanning
