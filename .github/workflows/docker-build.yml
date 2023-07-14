@@ -130,6 +130,11 @@ on:
         required: false
         type: string
         default: 'true'
+      scan_image:
+        description: 'Scan image for vulnerabilities'
+        required: false
+        type: boolean
+        default: "false"
     outputs:
       tags:
         description: "The tags from metadata-action"
@@ -326,6 +331,24 @@ jobs:
         run: |
           echo "Docker tags" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.metadata.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+
+      # Snyk image scan
+      - if: inputs.scan_image == 'true'
+        name: Fetch Snyk secrets
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+          app_name: 'console'
+          step_name: 'push-console'
+          secret_prefix: 'SNYK'
+          secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
+          parse_json: true
+      - if: inputs.scan_image == 'true'
+        name: Snyk image scan
+        uses: snyk/actions/docker@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
+        with:
+          image: ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.metadata.outputs.tags }}
+          args: --file=${{ inputs.dockerfile }} --severity-threshold=critical
       
       # ## image scanning
       # - if: inputs.enable_trivy == 'true'
