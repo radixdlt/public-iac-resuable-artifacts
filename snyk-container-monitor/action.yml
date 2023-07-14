@@ -56,7 +56,7 @@ runs:
       with:
         username: ${{ env.DOCKERHUB_PRIVATE_USERNAME }}
         password: ${{ env.DOCKERHUB_PRIVATE_TOKEN }}
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561 # v2.5.1
       with:
         node-version: '14'
     - name: Install snyk
