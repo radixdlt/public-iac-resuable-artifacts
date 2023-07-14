@@ -35,7 +35,7 @@ runs:
       uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
       with:
         role_name: ${{ inputs.role_name }}
-        app_name: ${{ input.app_name }}
+        app_name: ${{ inputs.app_name }}
         step_name: "snyk-container-monitor"
         secret_prefix: "DOCKERHUB_PRIVATE"
         region: ${{ inputs.region }}
@@ -45,7 +45,7 @@ runs:
       uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
       with:
         role_name: ${{ inputs.role_name }}
-        app_name: ${{ input.app_name }}
+        app_name: ${{ inputs.app_name }}
         step_name: "snyk-container-monitor"
         secret_prefix: "SNYK"
         region: ${{ inputs.region }}
