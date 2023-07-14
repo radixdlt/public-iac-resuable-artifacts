@@ -345,10 +345,12 @@ jobs:
           parse_json: true
       - if: inputs.scan_image == true
         name: Snyk image scan
-        uses: snyk/actions/docker@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
-        with:
-          image: ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
-          args: --file=${{ inputs.dockerfile }} --severity-threshold=critical
+        shell: bash
+        run: |
+          npm install snyk -g
+          snyk -v
+          snyk auth ${{ env.SNYK_TOKEN }}
+          snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical
       
       # ## image scanning
       # - if: inputs.enable_trivy == 'true'
