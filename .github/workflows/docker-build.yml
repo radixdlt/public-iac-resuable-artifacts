@@ -134,7 +134,7 @@ on:
         description: 'Scan image for vulnerabilities'
         required: false
         type: boolean
-        default: "false"
+        default: false
     outputs:
       tags:
         description: "The tags from metadata-action"
