@@ -60,10 +60,12 @@ runs:
       with:
         node-version: '14'
     - name: Install snyk
+      shell: bash
       run: |
         npm install snyk -g
         snyk -v
         snyk auth ${{ env.SNYK_TOKEN }}
     - name: Enable Snyk online images monitoring
+      shell: bash
       run: |
         snyk container monitor ${{ inputs.image }} --org=${{ inputs.snyk_org_id }} --target-reference=${{ inputs.target_ref }}
