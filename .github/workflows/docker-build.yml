@@ -135,6 +135,11 @@ on:
         required: false
         type: boolean
         default: false
+      continue_on_scan_image_finding:
+        description: 'Continue on scan_image vulnerability finding. This is intended to be used temporary until fix'
+        required: false
+        type: boolean
+        default: false
     outputs:
       tags:
         description: "The tags from metadata-action"
@@ -345,6 +350,7 @@ jobs:
           parse_json: true
       - if: inputs.scan_image == true
         name: Snyk image scan
+        continue-on-error: ${{ inputs.continue_on_scan_image_finding }}
         shell: bash
         run: |
           npm install snyk -g
