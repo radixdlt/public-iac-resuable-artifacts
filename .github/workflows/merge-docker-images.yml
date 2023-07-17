@@ -32,7 +32,7 @@ jobs:
       contents: read
       pull-requests: read
     environment: ${{ inputs.environment }}
-    name: Join Multiarch Image Dockerhub
+    name: Join Image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

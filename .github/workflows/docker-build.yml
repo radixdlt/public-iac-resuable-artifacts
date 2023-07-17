@@ -154,6 +154,7 @@ on:
         value: ${{ jobs.build-and-push.outputs.json }}
 jobs:
   build-and-push:
+    name: Docker Build
     permissions:
       id-token: write
       contents: read
