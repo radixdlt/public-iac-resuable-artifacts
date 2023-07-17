@@ -69,6 +69,6 @@ jobs:
           docker buildx create merging --use
       - name: Join multiarch images
         run: |
-          docker buildx imagetools create -t docker.io/radixdlt/${{ inputs.image_name }}:${{ inputs.image_tag }} \    
+          docker buildx imagetools create -t docker.io/radixdlt/${{ inputs.image_name }}:${{ inputs.image_tag }} \
             docker.io/radixdlt/${{ inputs.image_name }}:${{ inputs.image_tag }}-${{ inputs.tag_suffix_1 }} \
             docker.io/radixdlt/${{ inputs.image_name }}:${{ inputs.image_tag }}-${{ inputs.tag_suffix_2 }}
