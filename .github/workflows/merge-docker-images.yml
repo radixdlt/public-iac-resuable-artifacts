@@ -1,28 +1,30 @@
 name: merge-docker-images
 
-secrets:
-  role-to-assume:
-    type: string
-    required: true
-inputs:
-  aws_dockerhub_secret:
-    type: string
-    required: true
-  environment:
-    type: string
-    required: false
-  image_tag:
-    type: string
-    required: true
-  image_name:
-    type: string
-    required: true
-  tag_suffix_1:
-    type: string
-    required: true
-  tag_suffix_2:
-    type: string
-    required: true
+on:
+  workflow_call:
+    secrets:
+      role-to-assume:
+        type: string
+        required: true
+    inputs:
+      aws_dockerhub_secret:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: false
+      image_tag:
+        type: string
+        required: true
+      image_name:
+        type: string
+        required: true
+      tag_suffix_1:
+        type: string
+        required: true
+      tag_suffix_2:
+        type: string
+        required: true
 
 jobs:
   join_multiarch_image_dockerhub:
