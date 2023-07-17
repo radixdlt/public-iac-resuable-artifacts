@@ -4,7 +4,6 @@ on:
   workflow_call:
     secrets:
       role-to-assume:
-        type: string
         required: true
     inputs:
       aws_dockerhub_secret:
