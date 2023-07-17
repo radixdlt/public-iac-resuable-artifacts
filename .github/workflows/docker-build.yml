@@ -12,6 +12,12 @@ name: build-and-push-docker
 on:
   workflow_call:
     secrets:
+      workload_identity_provider:
+        description: 'Authentication method for gcr'
+        required: false
+      service_account:
+        description: 'Authentication method for gcr'
+        required: false
       role_to_assume:
         description: 'Authentication method for docker via aws'
         required: false
