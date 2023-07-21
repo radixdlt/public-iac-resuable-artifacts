@@ -142,7 +142,7 @@ on:
         required: false
         type: boolean
         default: false
-      Generate SBOM attestation for the build:
+      with_sbom:
         description: 'Generate SBOM attestation for the build'
         required: false
         type: boolean
