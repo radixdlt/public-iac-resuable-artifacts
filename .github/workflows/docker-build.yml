@@ -142,11 +142,6 @@ on:
         required: false
         type: boolean
         default: false
-      with_sbom:
-        description: 'Generate SBOM attestation for the build'
-        required: false
-        type: boolean
-        default: false
       attests:
         description: 'List of attestation parameters'
         required: false
@@ -303,7 +298,6 @@ jobs:
           build-args: ${{ inputs.build-args }}
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
-          sbom: ${{ inputs.with_sbom }}
           attests: ${{ inputs.attests }}
       - name: Save Image cache
         id: cache-image-save
