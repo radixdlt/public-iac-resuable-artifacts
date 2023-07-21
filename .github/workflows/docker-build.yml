@@ -298,7 +298,7 @@ jobs:
           build-args: ${{ inputs.build-args }}
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
-          sbom: ${{ input.with_sbom }}
+          sbom: ${{ inputs.with_sbom }}
       - name: Save Image cache
         id: cache-image-save
         uses: actions/cache/save@v3
