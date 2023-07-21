@@ -147,6 +147,11 @@ on:
         required: false
         type: boolean
         default: false
+      attests:
+        description: 'List of attestation parameters'
+        required: false
+        type: string
+        default: ''
     outputs:
       tags:
         description: "The tags from metadata-action"
@@ -299,6 +304,7 @@ jobs:
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
           sbom: ${{ inputs.with_sbom }}
+          attests: ${{ inputs.attests }}
       - name: Save Image cache
         id: cache-image-save
         uses: actions/cache/save@v3
