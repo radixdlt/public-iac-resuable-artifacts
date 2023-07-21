@@ -142,6 +142,11 @@ on:
         required: false
         type: boolean
         default: false
+      Generate SBOM attestation for the build:
+        description: 'Generate SBOM attestation for the build'
+        required: false
+        type: boolean
+        default: false
     outputs:
       tags:
         description: "The tags from metadata-action"
@@ -293,6 +298,7 @@ jobs:
           build-args: ${{ inputs.build-args }}
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
+          sbom: ${{ input.with_sbom }}
       - name: Save Image cache
         id: cache-image-save
         uses: actions/cache/save@v3
