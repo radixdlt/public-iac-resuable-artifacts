@@ -146,7 +146,7 @@ on:
         description: 'Generate SBOM attestation for the build'
         required: false
         type: boolean
-        default: false
+        default: true
     outputs:
       tags:
         description: "The tags from metadata-action"
