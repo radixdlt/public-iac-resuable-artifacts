@@ -69,7 +69,7 @@ on:
         description: 'The registry to push the image to'
         required: false
         type: string
-        default: "docker.io" 
+        default: "docker.io"
       restore_artifact:
         description: 'Wether or not to restore artifacts'
         required: false
@@ -117,12 +117,12 @@ on:
         required: false
         type: string
         default: "ubuntu-22.04"
-      build-args: 
+      build-args:
         description: 'Build arguments'
         required: false
         type: string
         default: ""
-      target: 
+      target:
         description: 'Build target for multistage builds'
         required: false
         type: string
@@ -142,6 +142,16 @@ on:
         required: false
         type: boolean
         default: false
+      snyk_target_ref:
+        description: 'Snyk target reference branch'
+        required: false
+        type: string
+        default: 'main'
+      with_sbom:
+        description: 'Generate SBOM attestation for the build'
+        required: false
+        type: boolean
+        default: true
     outputs:
       tags:
         description: "The tags from metadata-action"
@@ -165,12 +175,12 @@ jobs:
       labels: ${{ steps.metadata.outputs.labels }}
       json: ${{ steps.metadata.outputs.json }}
     steps:
-      # This is version v3.5.3 
-      # https://github.com/actions/checkout/releases/tag/v3.5.3 
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 
+      # This is version v3.5.3
+      # https://github.com/actions/checkout/releases/tag/v3.5.3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           fetch-depth: 0
-      # This is version v3.1.0 
+      # This is version v3.1.0
       # https://github.com/hadolint/hadolint-action/releases/tag/v3.1.0
       # - uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf
       #   with:
@@ -222,7 +232,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
         with:
           role-to-assume: ${{ secrets.role_to_assume }}
-          aws-region: eu-west-2  
+          aws-region: eu-west-2
       - if: inputs.enable_dockerhub == 'true'
         name: Read secrets from AWS Secrets Manager into environment variables
         uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
@@ -248,7 +258,7 @@ jobs:
       # https://github.com/docker/setup-buildx-action/releases/tag/v2.4.1
       - name: Set up Docker Context for Buildx
         run: |
-          docker context create builders        
+          docker context create builders
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7
         with:
@@ -293,13 +303,14 @@ jobs:
           build-args: ${{ inputs.build-args }}
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
+          sbom: ${{ inputs.with_sbom }}
       - name: Save Image cache
         id: cache-image-save
         uses: actions/cache/save@v3
         with:
           path: /tmp/outputs/cache/docker
           key: ${{ steps.cache-image-restore.outputs.cache-primary-key }}
-  
+
       # Post Processing (needs more testing)
       ## adding image tags to pull request
       - if: github.event_name == 'pull_request' && inputs.enable_pr_comment == 'true'
@@ -321,11 +332,11 @@ jobs:
         name: Fetch Snyk secrets
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
+          role_name: ${{ secrets.AWS_ROLE_NAME_SNYK_SECRET }}
           app_name: ${{ inputs.image_name }}
           step_name: 'snyk-scan-image'
           secret_prefix: 'SNYK'
-          secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
+          secret_name: ${{ secrets.AWS_SECRET_NAME_SNYK }}
           parse_json: true
       - if: inputs.scan_image == true
         name: Snyk image scan
@@ -335,7 +346,7 @@ jobs:
           npm install snyk -g
           snyk -v
           snyk auth ${{ env.SNYK_TOKEN }}
-          snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical
+          snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical --target-reference=${{ inputs.snyk_target_ref }}
       
       # ## image scanning
       # - if: inputs.enable_trivy == 'true'
