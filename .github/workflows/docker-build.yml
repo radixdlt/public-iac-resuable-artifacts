@@ -142,6 +142,11 @@ on:
         required: false
         type: boolean
         default: false
+      snyk_target_ref:
+        description: 'Snyk target reference branch'
+        required: false
+        type: string
+        default: 'main'
       with_sbom:
         description: 'Generate SBOM attestation for the build'
         required: false
@@ -341,7 +346,7 @@ jobs:
           npm install snyk -g
           snyk -v
           snyk auth ${{ env.SNYK_TOKEN }}
-          snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical
+          snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical --target-reference=${{ inputs.snyk_target_ref }}
       
       # ## image scanning
       # - if: inputs.enable_trivy == 'true'
