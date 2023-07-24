@@ -332,11 +332,11 @@ jobs:
         name: Fetch Snyk secrets
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: ${{ secrets.AWS_ROLE_NAME_SNYK_SECRET }}
+          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
           app_name: ${{ inputs.image_name }}
           step_name: 'snyk-scan-image'
           secret_prefix: 'SNYK'
-          secret_name: ${{ secrets.AWS_SECRET_NAME_SNYK }}
+          secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
           parse_json: true
       - if: inputs.scan_image == true
         name: Snyk image scan
