@@ -171,6 +171,7 @@ jobs:
     environment: ${{ inputs.environment }}
     runs-on: ${{ inputs.runs_on }}
     outputs:
+      default_tag: ${{ steps.default_docker_tag.outputs.default_tag }}
       tags: ${{ steps.metadata.outputs.tags }}
       labels: ${{ steps.metadata.outputs.labels }}
       json: ${{ steps.metadata.outputs.json }}
@@ -281,6 +282,11 @@ jobs:
             latest=false
             ${{ inputs.flavor }}
             ${{ inputs.flavors }}
+      - name: Export default version
+        id: default_docker_tag
+        run: |
+          echo "default_tag=${{ fromJSON(steps.metadata.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
+          
       - name: Restore cached image-cache
         id: cache-image-restore
         uses: actions/cache/restore@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
@@ -326,6 +332,7 @@ jobs:
         run: |
           echo "Docker tags" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.metadata.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "Default Tag: ${{ steps.default_docker_tag.outputs.default_tag }}" >> $GITHUB_STEP_SUMMARY
 
       # Snyk image scan
       - if: inputs.scan_image == true
@@ -346,14 +353,14 @@ jobs:
           npm install snyk -g
           snyk -v
           snyk auth ${{ env.SNYK_TOKEN }}
-          snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical --target-reference=${{ inputs.snyk_target_ref }}
+          snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical --target-reference=${{ inputs.snyk_target_ref }}
       
       # ## image scanning
       # - if: inputs.enable_trivy == 'true'
       #   name: Generate tarball from image
       #   run: |
-      #     docker pull ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
-      #     docker save -o vuln-image.tar ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
+      #     docker pull ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }}
+      #     docker save -o vuln-image.tar ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }}
       # - if: inputs.enable_trivy == 'true'
       #   name: Run Trivy vulnerability scanner
       #   uses: aquasecurity/trivy-action@master
@@ -399,8 +406,3 @@ jobs:
 #     enable_pr_comment: "false"
 #   secrets:
 #     role_to_assume: ${{ secrets.DOCKERHUB_RELEASER_ROLE }}
-
-# outputs:
-# api-tags: ${{ steps.docker-tags-api.outputs.tags }}
-# api-labels: ${{ steps.docker-tags-api.outputs.labels }}
-# api-json: ${{ steps.docker-tags-api.outputs.json }}
