@@ -178,7 +178,8 @@ jobs:
     steps:
       # This is version v3.5.3
       # https://github.com/actions/checkout/releases/tag/v3.5.3
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - name: Checkout Code
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           fetch-depth: 0
       # This is version v3.1.0
@@ -204,14 +205,14 @@ jobs:
       ## Private Repo credentials
       # This is version v2.2.0
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v2.2.0
-      - name: "Configure AWS credentials"
+      - name: "Configure AWS credentials (Private)"
         uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-common-secrets-read-access
           aws-region: eu-west-2
       # This is version v1.0.4
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.0.4
-      - name: Read secrets from AWS Secrets Manager into environment variables
+      - name: Read secrets from AWS Secrets Manager into environment variables (Private)
         uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
         with:
           secret-ids: |
@@ -219,7 +220,7 @@ jobs:
           parse-json-secrets: true
       # This is version v2.1.0
       # https://github.com/docker/login-action/releases/tag/v2.1.0
-      - name: Login to Docker Hub
+      - name: Login to Docker Hub (Private)
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
           username: ${{env.DOCKERHUB_PRIVATE_USERNAME}}
@@ -229,13 +230,13 @@ jobs:
       # This is version v1.7.0
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
       - if: inputs.enable_dockerhub == 'true'
-        name: "Configure AWS credentials"
+        name: "Configure AWS credentials (Public)"
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
         with:
           role-to-assume: ${{ secrets.role_to_assume }}
           aws-region: eu-west-2
       - if: inputs.enable_dockerhub == 'true'
-        name: Read secrets from AWS Secrets Manager into environment variables
+        name: Read secrets from AWS Secrets Manager into environment variables (Public)
         uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
         with:
           secret-ids: |
@@ -244,7 +245,7 @@ jobs:
       # This is version v2.1.0
       # https://github.com/docker/login-action/releases/tag/v2.1.0
       - if: inputs.enable_dockerhub == 'true'
-        name: Login to Docker Hub
+        name: Login to Docker Hub (Public)
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
           username: ${{env.DOCKERHUB_PUBLIC_USERNAME}}
@@ -253,7 +254,7 @@ jobs:
       # Setting up Build environment
       # This is version v2.1.0
       # https://github.com/docker/setup-qemu-action/releases/tag/v2.1.0
-      - name: Set up QEMU
+      - name: Set up QEMU 
         uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18
       # This is version v2.4.1
       # https://github.com/docker/setup-buildx-action/releases/tag/v2.4.1
@@ -285,6 +286,7 @@ jobs:
       - name: Export default version
         id: default_docker_tag
         run: |
+          echo "default_tag=${{ fromJSON(steps.metadata.outputs.json).labels['org.opencontainers.image.version'] }}"
           echo "default_tag=${{ fromJSON(steps.metadata.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
           
       - name: Restore cached image-cache
@@ -293,7 +295,7 @@ jobs:
         with:
           path: /tmp/outputs/cache/docker
           key: ${{ inputs.image_name }}-${{ inputs.cache_tag_suffix }}-${{ hashFiles(inputs.dockerfile) }}
-      - name: Build and push with metadata-action tags
+      - name: Build and push Docker Image
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           file: ${{ inputs.dockerfile }}
