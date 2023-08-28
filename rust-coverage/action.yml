@@ -3,13 +3,16 @@ inputs:
   tests-dir:
     required: true
     type: string
+  flags:
+    required: false
+    type: string
 
 runs:
   using: composite
   steps:
     - name: Run tests
       shell: bash
-      run: CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test
+      run: CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test ${{ inputs.flags }}
       working-directory: ${{ inputs.tests-dir }}
     - name: Generate coverage
       shell: bash
