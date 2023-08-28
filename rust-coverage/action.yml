@@ -1,18 +1,12 @@
-on:
-  workflow_call:
-    inputs:
-      tests-dir:
-        required: true
-        type: string
+name: rust-coverage    
+inputs:
+  tests-dir:
+    required: true
+    type: string
 
-jobs:
-  run-tests-with-coverage:
-    name: Run SBOR unit tests
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [k8s-linux-runner]
-    steps:
+runs:
+  using: composite
+  steps:
     - uses: actions/checkout@v3
     - uses: actions-rs/toolchain@v1
       with:
