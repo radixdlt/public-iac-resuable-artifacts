@@ -1,0 +1,37 @@
+on:
+  workflow_call:
+    inputs:
+      tests-dir:
+        required: true
+        type: string
+
+jobs:
+  run-tests-with-coverage:
+    name: Run SBOR unit tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [k8s-linux-runner]
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: 1.70.0
+        components: llvm-tools-preview
+    - name: Download grcov
+      run: |
+        mkdir -p "${HOME}/.local/bin"
+        curl -sL https://github.com/mozilla/grcov/releases/download/v0.8.10/grcov-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C "${HOME}/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+    - name: Run tests
+      run: CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test
+      working-directory: ${{ inputs.tests-dir }}
+    - name: Generate coverage
+      run: |
+        mkdir -p target/coverage/html
+        grcov . --binary-path ../target/debug/deps/ -s . -t html --branch --ignore-not-existing --ignore '../*' --ignore "/*" -o target/coverage/html
+      working-directory: ${{ inputs.tests-dir }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: sbor-coverage
+        path: ${{ inputs.tests-dir }}/target/coverage/html/index.html
