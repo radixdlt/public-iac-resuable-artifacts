@@ -19,5 +19,5 @@ runs:
       working-directory: ${{ inputs.tests-dir }}
     - uses: actions/upload-artifact@v3
       with:
-        name: sbor-coverage
+        name: ${{ inputs.tests-dir }}-coverage
         path: ${{ inputs.tests-dir }}/target/coverage/html/index.html
