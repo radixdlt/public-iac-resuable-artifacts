@@ -1,0 +1,26 @@
+name: rust-coverage    
+inputs:
+  tests-dir:
+    required: true
+    type: string
+  flags:
+    required: false
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Run tests
+      shell: bash
+      run: CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test ${{ inputs.flags }}
+      working-directory: ${{ inputs.tests-dir }}
+    - name: Generate coverage
+      shell: bash
+      run: |
+        mkdir -p target/coverage/html
+        grcov . --binary-path ../target/debug/deps/ -s . -t html --branch --ignore-not-existing --ignore '../*' --ignore "/*" -o target/coverage/html
+      working-directory: ${{ inputs.tests-dir }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.tests-dir }}-coverage
+        path: ${{ inputs.tests-dir }}/target/coverage/html/index.html
