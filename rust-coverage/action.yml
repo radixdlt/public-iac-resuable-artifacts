@@ -23,4 +23,4 @@ runs:
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.tests-dir }}-coverage
-        path: ${{ inputs.tests-dir }}/target/coverage/html/index.html
+        path: ${{ inputs.tests-dir }}/target/coverage/html/
