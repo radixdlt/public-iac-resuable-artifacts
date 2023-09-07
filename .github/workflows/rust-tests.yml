@@ -22,7 +22,7 @@ jobs:
         run: |
           rustup component add llvm-tools-preview
           cargo install grcov
-          apt update && apt install -y build-essential cmake
+          apt update && apt install -y build-essential cmake clang llvm
       - name: run tests
         run: |
           CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test ${{ inputs.flags }}
