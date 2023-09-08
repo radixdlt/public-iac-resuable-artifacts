@@ -13,6 +13,7 @@ runs:
     - name: Run tests
       shell: bash
       run: |
+        rm -fr ~/.cargo/registry
         cargo install --path ./simulator
         cargo llvm-cov nextest --features serde --output-path coverage ${{ inputs.flags }}
       working-directory: ${{ inputs.tests-dir }}
