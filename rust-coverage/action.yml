@@ -22,3 +22,4 @@ runs:
       with:
         name: coverage
         path: target/llvm-cov/html/
+      if: always()
