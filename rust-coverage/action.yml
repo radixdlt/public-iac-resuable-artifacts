@@ -16,7 +16,7 @@ runs:
         rm -fr ~/.cargo/registry
         #cargo install --path ./simulator
         cargo install cargo-llvm-cov
-        cargo llvm-cov nextest --features post_run_db_check serde --html ${{ inputs.flags }}
+        cargo llvm-cov nextest --features post_run_db_check serde ${{ inputs.flags }} --html
         ls -la
     - uses: actions/upload-artifact@v3
       with:
