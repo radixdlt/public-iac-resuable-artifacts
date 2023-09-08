@@ -14,7 +14,7 @@ runs:
       shell: bash
       run: |
         cargo install --path ./simulator
-        CARGO_INCREMENTAL=0 RUSTFLAGS='-Cinstrument-coverage' LLVM_PROFILE_FILE='cargo-test-%p-%m.profraw' cargo test ${{ inputs.flags }}
+        cargo llvm-cov nextest --features serde --output-path coverage ${{ inputs.flags }}
       working-directory: ${{ inputs.tests-dir }}
     - name: Generate coverage
       shell: bash
