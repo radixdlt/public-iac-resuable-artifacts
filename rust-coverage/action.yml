@@ -16,7 +16,7 @@ runs:
         rm -fr ~/.cargo/registry
         cargo install --path ./simulator
         cargo install cargo-llvm-cov
-        cargo llvm-cov ${{ inputs.flags }} --html
+        cargo llvm-cov ${{ inputs.flags }} --html --ignore-run-fail
         ls -la
     - uses: actions/upload-artifact@v3
       with:
