@@ -15,6 +15,7 @@ runs:
       run: |
         rm -fr ~/.cargo/registry
         cargo install --path ./simulator
+        cargo install cargo-llvm-cov
         cargo llvm-cov nextest --features serde --output-path coverage ${{ inputs.flags }}
       working-directory: ${{ inputs.tests-dir }}
     - name: Generate coverage
