@@ -20,5 +20,5 @@ runs:
         ls -la
     - uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.tests-dir }}-coverage
-        path: ${{ inputs.tests-dir }}/target/coverage/html/
+        name: coverage
+        path: target/llvm-cov/html/
