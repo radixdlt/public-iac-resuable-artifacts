@@ -14,9 +14,9 @@ runs:
       shell: bash
       run: |
         rm -fr ~/.cargo/registry
-        cargo install --path ./simulator
+        #cargo install --path ./simulator
         cargo install cargo-llvm-cov
-        cargo llvm-cov nextest --features post_run_db_check serde --html coverage ${{ inputs.flags }}
+        cargo llvm-cov nextest --features post_run_db_check serde --html ${{ inputs.flags }}
         ls -la
     - uses: actions/upload-artifact@v3
       with:
