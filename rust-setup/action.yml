@@ -5,6 +5,14 @@ inputs:
     type: string
     required: false
     default: 1.70.0
+  install_wasm:
+    type: string
+    required: false
+    default: "false"
+  install_simulator:
+    type: string
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -13,9 +21,25 @@ runs:
       with:
         toolchain: ${{ inputs.toolchain-version }}
         components: llvm-tools-preview
-    - name: Download grcov
+    - name: install nextest
       shell: bash
       run: |
-        mkdir -p "${HOME}/.local/bin"
-        curl -sL https://github.com/mozilla/grcov/releases/download/v0.8.10/grcov-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C "${HOME}/.local/bin"
-        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        cargo install cargo-nextest
+    - name: install wasm32-unknown-unknown
+      shell: bash
+      run: |
+        rustup target add wasm32-unknown-unknown
+      if: ${{ inputs.install_wasm32}} == "true"
+    - name: install apt deps
+      shell: bash
+      run: |
+        sudo apt update && sudo apt install -y clang llvm cmake build-essential
+    - name: install simulator
+      shell: bash
+      run: |
+        cargo install --path ./simulator
+      if: ${{ inputs.install_simulator}} == "true"
+    - name: install cargo-llvm-cov
+      shell: bash
+      run: |
+        cargo install cargo-llvm-cov
