@@ -259,7 +259,7 @@ jobs:
       # Setting up Build environment
       # This is version v2.1.0
       # https://github.com/docker/setup-qemu-action/releases/tag/v2.1.0
-      - if: inputs.disable_qemu == 'true'
+      - if: inputs.disable_qemu == true
         name: Set up QEMU 
         uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18
       # This is version v2.4.1
