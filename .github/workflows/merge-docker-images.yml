@@ -1,0 +1,74 @@
+name: merge-docker-images
+
+on:
+  workflow_call:
+    secrets:
+      role-to-assume:
+        required: true
+    inputs:
+      aws_dockerhub_secret:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: false
+      image_tag:
+        type: string
+        required: true
+      image_name:
+        type: string
+        required: true
+      tag_suffix_1:
+        type: string
+        required: true
+      tag_suffix_2:
+        type: string
+        required: true
+
+jobs:
+  join_multiarch_image_dockerhub:
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    environment: ${{ inputs.environment }}
+    name: Join Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac
+        with:
+          fetch-depth: 0
+      ## Dockerhub
+      # This is version v1.7.0
+      # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
+      - name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@50ac8dd1e1b10d09dac7b8727528b91bed831ac0
+        with:
+          role-to-assume: ${{ secrets.role-to-assume }}
+          aws-region: eu-west-2
+      - name: Read secrets from AWS Secrets Manager into environment variables
+        uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
+        with:
+          secret-ids: |
+            DOCKERHUB, ${{ inputs.aws_dockerhub_secret }}
+          parse-json-secrets: true
+      - name: Login to Docker Hub
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
+      - name: Install and Configure Buildx
+        run: |
+          wget https://github.com/docker/buildx/releases/download/v0.10.4/buildx-v0.10.4.linux-amd64
+          echo "---- Configure Docker plugins ----"
+          mkdir -p /home/runner/.docker/cli-plugins/
+          mv buildx-v0.10.4.linux-amd64 /home/runner/.docker/cli-plugins/docker-buildx
+          chmod +x /home/runner/.docker/cli-plugins/docker-buildx
+          echo "---- Create build context ----"
+          docker context create merging
+          docker buildx create merging --use
+      - name: Join multiarch images
+        run: |
+          docker buildx imagetools create -t docker.io/radixdlt/${{ inputs.image_name }}:${{ inputs.image_tag }} \
+            docker.io/radixdlt/${{ inputs.image_name }}:${{ inputs.image_tag }}-${{ inputs.tag_suffix_1 }} \
+            docker.io/radixdlt/${{ inputs.image_name }}:${{ inputs.image_tag }}-${{ inputs.tag_suffix_2 }}
