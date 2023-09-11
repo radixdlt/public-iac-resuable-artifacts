@@ -171,13 +171,15 @@ jobs:
     environment: ${{ inputs.environment }}
     runs-on: ${{ inputs.runs_on }}
     outputs:
+      default_tag: ${{ steps.default_docker_tag.outputs.default_tag }}
       tags: ${{ steps.metadata.outputs.tags }}
       labels: ${{ steps.metadata.outputs.labels }}
       json: ${{ steps.metadata.outputs.json }}
     steps:
-      # This is version v3.5.3
-      # https://github.com/actions/checkout/releases/tag/v3.5.3
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      # This is version v3.6.0
+      # https://github.com/actions/checkout/releases/tag/v3.6.0
+      - name: Checkout Code
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
         with:
           fetch-depth: 0
       # This is version v3.1.0
@@ -203,23 +205,23 @@ jobs:
       ## Private Repo credentials
       # This is version v2.2.0
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v2.2.0
-      - name: "Configure AWS credentials"
+      - name: "Configure AWS credentials (Private)"
         uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-common-secrets-read-access
           aws-region: eu-west-2
       # This is version v1.0.4
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.0.4
-      - name: Read secrets from AWS Secrets Manager into environment variables
+      - name: Read secrets from AWS Secrets Manager into environment variables (Private)
         uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
         with:
           secret-ids: |
             DOCKERHUB_PRIVATE, github-actions/common/dockerhub-credentials
           parse-json-secrets: true
-      # This is version v2.1.0
-      # https://github.com/docker/login-action/releases/tag/v2.1.0
-      - name: Login to Docker Hub
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+      # This is version v2.2.0
+      # https://github.com/docker/login-action/releases/tag/v2.2.0
+      - name: Login to Docker Hub (Private)
+        uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc
         with:
           username: ${{env.DOCKERHUB_PRIVATE_USERNAME}}
           password: ${{env.DOCKERHUB_PRIVATE_TOKEN}}
@@ -228,13 +230,13 @@ jobs:
       # This is version v1.7.0
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
       - if: inputs.enable_dockerhub == 'true'
-        name: "Configure AWS credentials"
+        name: "Configure AWS credentials (Public)"
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
         with:
           role-to-assume: ${{ secrets.role_to_assume }}
           aws-region: eu-west-2
       - if: inputs.enable_dockerhub == 'true'
-        name: Read secrets from AWS Secrets Manager into environment variables
+        name: Read secrets from AWS Secrets Manager into environment variables (Public)
         uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
         with:
           secret-ids: |
@@ -243,7 +245,7 @@ jobs:
       # This is version v2.1.0
       # https://github.com/docker/login-action/releases/tag/v2.1.0
       - if: inputs.enable_dockerhub == 'true'
-        name: Login to Docker Hub
+        name: Login to Docker Hub (Public)
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
           username: ${{env.DOCKERHUB_PUBLIC_USERNAME}}
@@ -252,7 +254,7 @@ jobs:
       # Setting up Build environment
       # This is version v2.1.0
       # https://github.com/docker/setup-qemu-action/releases/tag/v2.1.0
-      - name: Set up QEMU
+      - name: Set up QEMU 
         uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18
       # This is version v2.4.1
       # https://github.com/docker/setup-buildx-action/releases/tag/v2.4.1
@@ -265,9 +267,6 @@ jobs:
           version: latest
           endpoint: builders
 
-      # Building the image
-      # This is version v4.0.0
-      # https://github.com/docker/build-push-action/releases/tag/v4.0.0
       - name: Setup tags with metadata-action
         id: metadata
         uses: docker/metadata-action@818d4b7b91585d195f67373fd9cb0332e31a7175
@@ -281,14 +280,23 @@ jobs:
             latest=false
             ${{ inputs.flavor }}
             ${{ inputs.flavors }}
+      - name: Export default version
+        id: default_docker_tag
+        run: |
+          echo "default_tag=${{ fromJSON(steps.metadata.outputs.json).labels['org.opencontainers.image.version'] }}"
+          echo "default_tag=${{ fromJSON(steps.metadata.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
+          
       - name: Restore cached image-cache
         id: cache-image-restore
         uses: actions/cache/restore@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: /tmp/outputs/cache/docker
           key: ${{ inputs.image_name }}-${{ inputs.cache_tag_suffix }}-${{ hashFiles(inputs.dockerfile) }}
-      - name: Build and push with metadata-action tags
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+      # Building the image
+      # This is version v4.1.1
+      # https://github.com/docker/build-push-action/releases/tag/v4.1.1
+      - name: Build and push Docker Image
+        uses: docker/build-push-action@2eb1c1961a95fc15694676618e422e8ba1d63825
         with:
           file: ${{ inputs.dockerfile }}
           context: ${{ inputs.context }}
@@ -326,6 +334,7 @@ jobs:
         run: |
           echo "Docker tags" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.metadata.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "Default Tag: ${{ steps.default_docker_tag.outputs.default_tag }}" >> $GITHUB_STEP_SUMMARY
 
       # Snyk image scan
       - if: inputs.scan_image == true
@@ -346,14 +355,14 @@ jobs:
           npm install snyk -g
           snyk -v
           snyk auth ${{ env.SNYK_TOKEN }}
-          snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical --target-reference=${{ inputs.snyk_target_ref }}
+          snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical --target-reference=${{ inputs.snyk_target_ref }}
       
       # ## image scanning
       # - if: inputs.enable_trivy == 'true'
       #   name: Generate tarball from image
       #   run: |
-      #     docker pull ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
-      #     docker save -o vuln-image.tar ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ inputs.tag }}
+      #     docker pull ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }}
+      #     docker save -o vuln-image.tar ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }}
       # - if: inputs.enable_trivy == 'true'
       #   name: Run Trivy vulnerability scanner
       #   uses: aquasecurity/trivy-action@master
@@ -399,8 +408,3 @@ jobs:
 #     enable_pr_comment: "false"
 #   secrets:
 #     role_to_assume: ${{ secrets.DOCKERHUB_RELEASER_ROLE }}
-
-# outputs:
-# api-tags: ${{ steps.docker-tags-api.outputs.tags }}
-# api-labels: ${{ steps.docker-tags-api.outputs.labels }}
-# api-json: ${{ steps.docker-tags-api.outputs.json }}
