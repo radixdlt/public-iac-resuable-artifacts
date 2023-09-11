@@ -14,9 +14,7 @@ runs:
       shell: bash
       run: |
         rm -fr ~/.cargo/registry
-        cargo install --path ./simulator
-        cargo install cargo-llvm-cov
-        cargo llvm-cov nextest ${{ inputs.flags }} --html --ignore-run-fail
+        cargo llvm-cov nextest ${{ inputs.flags }} --html
     - uses: actions/upload-artifact@v3
       with:
         name: coverage
