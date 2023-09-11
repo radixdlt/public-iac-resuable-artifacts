@@ -211,7 +211,7 @@ jobs:
       # This is version v2.2.0
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v2.2.0
       - name: "Configure AWS credentials (Private)"
-        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355
+        uses: aws-actions/configure-aws-credentials@50ac8dd1e1b10d09dac7b8727528b91bed831ac0
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-common-secrets-read-access
           aws-region: eu-west-2
@@ -236,7 +236,7 @@ jobs:
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
       - if: inputs.enable_dockerhub == 'true'
         name: "Configure AWS credentials (Public)"
-        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
+        uses: aws-actions/configure-aws-credentials@50ac8dd1e1b10d09dac7b8727528b91bed831ac0
         with:
           role-to-assume: ${{ secrets.role_to_assume }}
           aws-region: eu-west-2
