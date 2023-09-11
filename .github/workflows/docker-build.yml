@@ -152,6 +152,11 @@ on:
         required: false
         type: boolean
         default: true
+      disable_qemu:
+        description: 'Whether the setup qemu step should be skipped'
+        required: false
+        type: boolean
+        default: false
     outputs:
       tags:
         description: "The tags from metadata-action"
@@ -254,7 +259,8 @@ jobs:
       # Setting up Build environment
       # This is version v2.1.0
       # https://github.com/docker/setup-qemu-action/releases/tag/v2.1.0
-      - name: Set up QEMU 
+      - if: inputs.disable_qemu == 'true'
+        name: Set up QEMU 
         uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18
       # This is version v2.4.1
       # https://github.com/docker/setup-buildx-action/releases/tag/v2.4.1
