@@ -3,6 +3,9 @@ inputs:
   flags:
     required: false
     type: string
+  coverage_report_name:
+    required: true
+    type: string
 
 runs:
   using: composite
@@ -14,6 +17,6 @@ runs:
         cargo llvm-cov nextest ${{ inputs.flags }} --html
     - uses: actions/upload-artifact@v3
       with:
-        name: coverage
+        name: ${{ inputs.coverage_report_name }}
         path: target/llvm-cov/html/
       if: always()
