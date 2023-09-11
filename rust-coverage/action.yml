@@ -1,8 +1,5 @@
 name: rust-coverage    
 inputs:
-  tests-dir:
-    required: true
-    type: string
   flags:
     required: false
     type: string
