@@ -368,7 +368,7 @@ jobs:
           snyk auth ${{ env.SNYK_TOKEN }}
           snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical --target-reference=${{ inputs.snyk_target_ref }}
 
-        if: inputs.sanity_check != ''
+      - if: inputs.sanity_check != ''
         name: Sanity check
         shell: bash
         run: |
