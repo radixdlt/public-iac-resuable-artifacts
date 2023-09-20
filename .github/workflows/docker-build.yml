@@ -157,6 +157,11 @@ on:
         required: false
         type: boolean
         default: false
+      post_script:
+        description: 'script that will run after the image is built'
+        required: false
+        type: string
+        default: ''
     outputs:
       tags:
         description: "The tags from metadata-action"
@@ -362,7 +367,13 @@ jobs:
           snyk -v
           snyk auth ${{ env.SNYK_TOKEN }}
           snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical --target-reference=${{ inputs.snyk_target_ref }}
-      
+
+      - if: inputs.post_script != ''
+        name: post script
+        shell: bash
+        run: |
+          set -ex
+          ${{ inputs.post_script }}
       # ## image scanning
       # - if: inputs.enable_trivy == 'true'
       #   name: Generate tarball from image
