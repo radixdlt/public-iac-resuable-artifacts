@@ -158,7 +158,7 @@ on:
         type: boolean
         default: false
       post_script:
-        description: 'path to a script that can be used to sanity check the image built'
+        description: 'script that will run after the image is built'
         required: false
         type: string
         default: ''
