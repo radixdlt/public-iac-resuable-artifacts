@@ -162,6 +162,11 @@ on:
         required: false
         type: string
         default: ''
+      push_image:
+        description: 'push the docker image to a registry or not'
+        required: false
+        type: boolean
+        default: true
     outputs:
       tags:
         description: "The tags from metadata-action"
@@ -311,7 +316,7 @@ jobs:
         with:
           file: ${{ inputs.dockerfile }}
           context: ${{ inputs.context }}
-          push: true
+          push: ${{ inputs.push_image }}
           platforms: ${{ inputs.platforms }}
           cache-from: |
             type=local,src=/tmp/outputs/cache/docker
