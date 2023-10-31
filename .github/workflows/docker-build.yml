@@ -329,6 +329,8 @@ jobs:
         with:
           path: /tmp/outputs/cache/docker
           key: ${{ inputs.image_name }}-${{ inputs.cache_tag_suffix }}-${{ hashFiles(inputs.dockerfile) }}
+      - name: Collect Workflow Telemetry
+        uses: runforesight/workflow-telemetry-action@v1
       # Building the image
       # This is version v4.1.1
       # https://github.com/docker/build-push-action/releases/tag/v4.1.1
