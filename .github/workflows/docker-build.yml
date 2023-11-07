@@ -182,7 +182,7 @@ jobs:
     name: A test of the oidc debugger
     steps:
       - name: Checkout actions-oidc-debugger
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: github/actions-oidc-debugger
           ref: 58fe0cc61207102542ebf9101114da5ac5a72582
@@ -210,7 +210,7 @@ jobs:
       # This is version v3.6.0
       # https://github.com/actions/checkout/releases/tag/v3.6.0
       - name: Checkout Code
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
         with:
           fetch-depth: 0
       # This is version v3.1.0
