@@ -287,7 +287,7 @@ jobs:
       # https://github.com/docker/setup-qemu-action/releases/tag/v2.1.0
       - if: inputs.disable_qemu == true
         name: Set up QEMU 
-        uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18
+        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3
       # This is version v2.4.1
       # https://github.com/docker/setup-buildx-action/releases/tag/v2.4.1
       - name: Set up Docker Context for Buildx
