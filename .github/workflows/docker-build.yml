@@ -37,11 +37,6 @@ on:
         required: false
         type: string
         default: 'default'
-      save_cache:
-        description: 'A flag to turn saving of cached image on/off'
-        required: false
-        type: boolean
-        default: true
       tag:
         description: 'The tag to push'
         required: false
@@ -329,8 +324,6 @@ jobs:
         with:
           path: /tmp/outputs/cache/docker
           key: ${{ inputs.image_name }}-${{ inputs.cache_tag_suffix }}-${{ hashFiles(inputs.dockerfile) }}
-      - name: Collect Workflow Telemetry
-        uses: runforesight/workflow-telemetry-action@v1
       # Building the image
       # This is version v4.1.1
       # https://github.com/docker/build-push-action/releases/tag/v4.1.1
@@ -351,7 +344,7 @@ jobs:
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
           sbom: ${{ inputs.with_sbom }}
-      - if: ${{ inputs.save_cache }}
+      - if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' 
         name: Save Image cache
         id: cache-image-save
         uses: actions/cache/save@v3
