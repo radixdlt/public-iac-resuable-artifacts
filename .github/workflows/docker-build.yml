@@ -344,7 +344,8 @@ jobs:
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
           sbom: ${{ inputs.with_sbom }}
-      - name: Save Image cache
+      - if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release')
+        name: Save Image cache
         id: cache-image-save
         uses: actions/cache/save@v3
         with:
