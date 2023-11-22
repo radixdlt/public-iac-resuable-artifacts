@@ -356,7 +356,7 @@ jobs:
       ## adding image tags to pull request
       - if: github.event_name == 'pull_request' && inputs.enable_pr_comment == 'true'
         name: Add docker tags to PR comment
-        uses: thollander/actions-comment-pull-request@632cf9ce90574d125be56b5f3405cda41a84e2fd
+        uses: thollander/actions-comment-pull-request@1d3973dc4b8e1399c0620d3f2b1aa5e795465308
         with:
           message: |
             Docker tags
