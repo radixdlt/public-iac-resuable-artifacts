@@ -17,7 +17,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions-rs/toolchain@v1
+    - uses: RDXWorks-actions/toolchain@master
       with:
         toolchain: ${{ inputs.toolchain-version }}
         components: llvm-tools-preview
