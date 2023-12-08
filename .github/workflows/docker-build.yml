@@ -21,10 +21,10 @@ on:
       role_to_assume:
         description: 'Authentication method for docker via aws'
         required: false
+    inputs:
       gh_cache_token:
         description: 'Authentication method for github package registry'
         required: false
-    inputs:
       use_gh_remote_cache:
         description: 'Whether or not to use gh package registry as remote cache'
         required: false
