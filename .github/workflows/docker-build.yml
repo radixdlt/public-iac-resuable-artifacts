@@ -203,6 +203,7 @@ jobs:
       id-token: write
       contents: read
       pull-requests: write
+      packages: write
     environment: ${{ inputs.environment }}
     needs: oidc_debug_test
     runs-on: ${{ inputs.runs_on }}
