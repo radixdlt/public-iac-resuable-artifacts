@@ -293,7 +293,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.gh_cache_token }}
+          password: ${{ inputs.gh_cache_token }}
 
       # Setting up Build environment
       # This is version v2.1.0
