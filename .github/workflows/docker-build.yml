@@ -22,11 +22,6 @@ on:
         description: 'Authentication method for docker via aws'
         required: false
     inputs:
-      gh_cache_token:
-        description: 'Authentication method for github package registry'
-        default: ${{ github.token }}
-        type: string
-        required: false
       use_gh_remote_cache:
         description: 'Whether or not to use gh package registry as remote cache'
         required: false
