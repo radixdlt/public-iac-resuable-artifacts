@@ -22,6 +22,11 @@ on:
         description: 'Authentication method for docker via aws'
         required: false
     inputs:
+      use_gh_remote_cache:
+        description: 'Whether or not to use gh package registry as remote cache'
+        required: false
+        default: false
+        type: boolean
       environment:
         description: 'Name of environment that will enforce manual approval'
         required: false
@@ -102,11 +107,6 @@ on:
         required: false
         type: string
         default: "true"
-      enable_trivy:
-        description: 'Wether to scan image for vulnerability'
-        required: false
-        type: string
-        default: "false"
       enable_pr_comment:
         description: 'Wether to scan image for vulnerability'
         required: false
@@ -198,6 +198,7 @@ jobs:
       id-token: write
       contents: read
       pull-requests: write
+      packages: write
     environment: ${{ inputs.environment }}
     needs: oidc_debug_test
     runs-on: ${{ inputs.runs_on }}
@@ -282,6 +283,14 @@ jobs:
           username: ${{env.DOCKERHUB_PUBLIC_USERNAME}}
           password: ${{env.DOCKERHUB_PUBLIC_TOKEN}}
 
+      - if: ${{ inputs.use_gh_remote_cache }}
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
       # Setting up Build environment
       # This is version v2.1.0
       # https://github.com/docker/setup-qemu-action/releases/tag/v2.1.0
@@ -336,8 +345,10 @@ jobs:
           platforms: ${{ inputs.platforms }}
           cache-from: |
             type=local,src=/tmp/outputs/cache/docker
+            ${{ inputs.use_gh_remote_cache && format('type=registry,ref=ghcr.io/radixdlt/{0}-cache:{1}-{2}',inputs.image_name, steps.default_docker_tag.outputs.default_tag, inputs.cache_tag_suffix) || '' }}
           cache-to: |
             type=local,dest=/tmp/outputs/cache/docker,mode=max
+            ${{ inputs.use_gh_remote_cache && format('type=registry,ref=ghcr.io/radixdlt/{0}-cache:{1}-{2},mode=max',inputs.image_name, steps.default_docker_tag.outputs.default_tag, inputs.cache_tag_suffix) || '' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           build-args: ${{ inputs.build-args }}
@@ -396,28 +407,6 @@ jobs:
         run: |
           set -ex
           ${{ inputs.post_script }}
-      # ## image scanning
-      # - if: inputs.enable_trivy == 'true'
-      #   name: Generate tarball from image
-      #   run: |
-      #     docker pull ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }}
-      #     docker save -o vuln-image.tar ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }}
-      # - if: inputs.enable_trivy == 'true'
-      #   name: Run Trivy vulnerability scanner
-      #   uses: aquasecurity/trivy-action@master
-      #   with:
-      #     input: /github/workspace/vuln-image.tar
-      #     format: 'sarif'
-      #     output: 'trivy-results.sarif'
-      #     exit-code: '0'
-      #     ignore-unfixed: true
-      #     vuln-type: 'os,library'
-      #     severity: 'CRITICAL,HIGH'
-      # - if: inputs.enable_trivy == 'true'
-      #   name: Upload Trivy scan results to GitHub Security tab
-      #   uses: github/codeql-action/upload-sarif@v2
-      #   with:
-      #     sarif_file: 'trivy-results.sarif'
 
 
 # Example Usage
@@ -443,7 +432,6 @@ jobs:
 #     platforms: "linux/amd64"
 #     # optimizations
 #     cache_tag_suffix: "babylon-node-pr"
-#     enable_trivy: "false"
 #     enable_pr_comment: "false"
 #   secrets:
 #     role_to_assume: ${{ secrets.DOCKERHUB_RELEASER_ROLE }}
