@@ -326,7 +326,11 @@ jobs:
         run: |
           echo "default_tag=${{ fromJSON(steps.metadata.outputs.json).labels['org.opencontainers.image.version'] }}"
           echo "default_tag=${{ fromJSON(steps.metadata.outputs.json).labels['org.opencontainers.image.version'] }}" >> $GITHUB_OUTPUT
-          
+      - name: Export Cache caluclation
+        id: export_cache_calc
+        run: |
+          export export_cache_flag=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release') }}
+          echo "export_cache_flag=$export_cache_flag" >> $GITHUB_OUTPUT
       - name: Restore cached image-cache
         id: cache-image-restore
         uses: actions/cache/restore@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
@@ -347,7 +351,7 @@ jobs:
             type=local,src=/tmp/outputs/cache/docker
             ${{ inputs.use_gh_remote_cache && format('type=registry,ref=ghcr.io/radixdlt/{0}-cache:{1}-{2}',inputs.image_name, steps.default_docker_tag.outputs.default_tag, inputs.cache_tag_suffix) || '' }}
           cache-to: |
-            type=local,dest=/tmp/outputs/cache/docker,mode=max
+            ${{ steps.export_cache_calc.outputs.export_cache_flag == 'true' && 'type=local,dest=/tmp/outputs/cache/docker,mode=max' || '' }}
             ${{ inputs.use_gh_remote_cache && format('type=registry,ref=ghcr.io/radixdlt/{0}-cache:{1}-{2},mode=max',inputs.image_name, steps.default_docker_tag.outputs.default_tag, inputs.cache_tag_suffix) || '' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
@@ -355,7 +359,7 @@ jobs:
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
           sbom: ${{ inputs.with_sbom }}
-      - if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release')
+      - if: steps.export_cache_calc.outputs.export_cache_flag == true
         name: Save Image cache
         id: cache-image-save
         uses: actions/cache/save@v3
