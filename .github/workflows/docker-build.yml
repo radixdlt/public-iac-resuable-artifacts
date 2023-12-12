@@ -359,7 +359,7 @@ jobs:
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
           sbom: ${{ inputs.with_sbom }}
-      - if: steps.export_cache_calc.outputs.export_cache_flag
+      - if: steps.export_cache_calc.outputs.export_cache_flag == true
         name: Save Image cache
         id: cache-image-save
         uses: actions/cache/save@v3
