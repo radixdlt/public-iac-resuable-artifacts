@@ -329,7 +329,7 @@ jobs:
       - name: Export Cache caluclation
         id: export_cache
         run: |
-          export EXPORT_CACHE_FLAG=${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release') }}
+          export EXPORT_CACHE_FLAG=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release') }}
           echo "EXPORT_CACHE_FLAG=$EXPORT_CACHE_FLAG" >> $GITHUB_OUTPUT
       - name: Restore cached image-cache
         id: cache-image-restore
@@ -359,7 +359,7 @@ jobs:
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
           sbom: ${{ inputs.with_sbom }}
-      - if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release')
+      - if: steps.export_cache.outputs.EXPORT_CACHE_FLAG
         name: Save Image cache
         id: cache-image-save
         uses: actions/cache/save@v3
