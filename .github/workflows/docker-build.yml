@@ -163,6 +163,9 @@ on:
         type: string
         default: ''
     outputs:
+      default_tag:
+        description: "The default_tag from metadata-action"
+        value: ${{ jobs.build-and-push.outputs.default_tag }}
       tags:
         description: "The tags from metadata-action"
         value: ${{ jobs.build-and-push.outputs.tags }}
