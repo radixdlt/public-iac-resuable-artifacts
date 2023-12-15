@@ -35,25 +35,25 @@ jobs:
     name: Join Image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - uses: RDXWorks-actions/checkout@main
         with:
           fetch-depth: 0
       ## Dockerhub
       # This is version v1.7.0
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
       - name: "Configure AWS credentials"
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
+        uses: RDXWorks-actions/configure-aws-credentials@main
         with:
           role-to-assume: ${{ secrets.role-to-assume }}
           aws-region: eu-west-2
       - name: Read secrets from AWS Secrets Manager into environment variables
-        uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
+        uses: RDXWorks-actions/aws-secretsmanager-get-secrets@main
         with:
           secret-ids: |
             DOCKERHUB, ${{ inputs.aws_dockerhub_secret }}
           parse-json-secrets: true
       - name: Login to Docker Hub
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
+        uses: RDXWorks-actions/login-action@master
         with:
           username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ env.DOCKERHUB_TOKEN }}
