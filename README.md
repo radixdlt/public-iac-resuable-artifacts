@@ -18,7 +18,7 @@ Hopefully self-explaining parameters to specify the docker image tag.
 ```
 - name: Setup tags with metadata-action
   id: metadata
-  uses: docker/metadata-action@57396166ad8aefe6098280995947635806a0e6ea
+  uses: RDXWorks-actions/metadata-action@master
   with:
     images: ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}
     tags: 
@@ -55,7 +55,7 @@ Use this if your docker build requires local files.
 # Restoring Artifacts build in a previous step
     - if: inputs.restore_artifact == 'true'
     name: Download artifact
-    uses: actions/download-artifact@v3
+    uses: RDXWorks-actions/download-artifact@main
     with:
         name: ${{ inputs.artifact_name }}
         path: ${{ inputs.artifact_location }}
@@ -117,7 +117,7 @@ In case these options do not fit you. Try this approach:
 setup-tags:
   runs-on: ubuntu-latest
   steps:
-    - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b
+    - uses: RDXWorks-actions/checkout@main
     - name: Update version string in app
       id: update_version_string
       run: |

@@ -185,7 +185,7 @@ jobs:
     name: A test of the oidc debugger
     steps:
       - name: Checkout actions-oidc-debugger
-        uses: actions/checkout@v4
+        uses: RDXWorks-actions/checkout@main
         with:
           repository: github/actions-oidc-debugger
           ref: 58fe0cc61207102542ebf9101114da5ac5a72582
@@ -214,7 +214,7 @@ jobs:
       # This is version v3.6.0
       # https://github.com/actions/checkout/releases/tag/v3.6.0
       - name: Checkout Code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        uses: RDXWorks-actions/checkout@main
         with:
           fetch-depth: 0
       # This is version v3.1.0
@@ -227,7 +227,7 @@ jobs:
       # Restoring Artifacts build in a previous step
       - if: inputs.restore_artifact == 'true'
         name: Download artifact
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a
+        uses: RDXWorks-actions/download-artifact@main
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.artifact_location }}
@@ -241,22 +241,20 @@ jobs:
       # This is version v2.2.0
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v2.2.0
       - name: "Configure AWS credentials (Private)"
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
+        uses: RDXWorks-actions/configure-aws-credentials@main
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-common-secrets-read-access
           aws-region: eu-west-2
       # This is version v1.0.4
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.0.4
       - name: Read secrets from AWS Secrets Manager into environment variables (Private)
-        uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
+        uses: RDXWorks-actions/aws-secretsmanager-get-secrets@main
         with:
           secret-ids: |
             DOCKERHUB_PRIVATE, github-actions/common/dockerhub-credentials
           parse-json-secrets: true
-      # This is version v2.2.0
-      # https://github.com/docker/login-action/releases/tag/v2.2.0
       - name: Login to Docker Hub (Private)
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
+        uses: RDXWorks-actions/login-action@master
         with:
           username: ${{env.DOCKERHUB_PRIVATE_USERNAME}}
           password: ${{env.DOCKERHUB_PRIVATE_TOKEN}}
@@ -266,54 +264,48 @@ jobs:
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
       - if: inputs.enable_dockerhub == 'true'
         name: "Configure AWS credentials (Public)"
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
+        uses: RDXWorks-actions/configure-aws-credentials@main
         with:
           role-to-assume: ${{ secrets.role_to_assume }}
           aws-region: eu-west-2
       - if: inputs.enable_dockerhub == 'true'
         name: Read secrets from AWS Secrets Manager into environment variables (Public)
-        uses: aws-actions/aws-secretsmanager-get-secrets@022e8919774ecb75e8e375656d7b1898936ab878
+        uses: RDXWorks-actions/aws-secretsmanager-get-secrets@main
         with:
           secret-ids: |
             DOCKERHUB_PUBLIC, github-actions/rdxworks/dockerhub-images/release-credentials
           parse-json-secrets: true
-      # This is version v2.1.0
-      # https://github.com/docker/login-action/releases/tag/v2.1.0
       - if: inputs.enable_dockerhub == 'true'
         name: Login to Docker Hub (Public)
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
+        uses: RDXWorks-actions/login-action@master
         with:
           username: ${{env.DOCKERHUB_PUBLIC_USERNAME}}
           password: ${{env.DOCKERHUB_PUBLIC_TOKEN}}
 
       - if: ${{ inputs.use_gh_remote_cache }}
         name: Login to GitHub Container Registry
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
+        uses: RDXWorks-actions/login-action@master
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
       # Setting up Build environment
-      # This is version v2.1.0
-      # https://github.com/docker/setup-qemu-action/releases/tag/v2.1.0
       - if: inputs.disable_qemu == true
         name: Set up QEMU 
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3
-      # This is version v2.4.1
-      # https://github.com/docker/setup-buildx-action/releases/tag/v2.4.1
+        uses: RDXWorks-actions/setup-qemu-action@master
       - name: Set up Docker Context for Buildx
         run: |
           docker context create builders
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7
+        uses: RDXWorks-actions/setup-buildx-action@master
         with:
           version: latest
           endpoint: builders
 
       - name: Setup tags with metadata-action
         id: metadata
-        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934
+        uses: RDXWorks-actions/metadata-action@master
         with:
           images: |
             ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}
@@ -336,7 +328,7 @@ jobs:
           echo "export_cache_flag=$export_cache_flag" >> $GITHUB_OUTPUT
       - name: Restore cached image-cache
         id: cache-image-restore
-        uses: actions/cache/restore@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
+        uses: RDXWorks-actions/cache/restore@main
         with:
           path: /tmp/outputs/cache/docker
           key: ${{ inputs.image_name }}-${{ inputs.cache_tag_suffix }}-${{ hashFiles(inputs.dockerfile) }}
@@ -344,7 +336,7 @@ jobs:
       # This is version v4.1.1
       # https://github.com/docker/build-push-action/releases/tag/v4.1.1
       - name: Build and push Docker Image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
+        uses: RDXWorks-actions/build-push-action@master
         with:
           file: ${{ inputs.dockerfile }}
           context: ${{ inputs.context }}
@@ -365,7 +357,7 @@ jobs:
       - if: steps.export_cache_calc.outputs.export_cache_flag == true
         name: Save Image cache
         id: cache-image-save
-        uses: actions/cache/save@v3
+        uses: RDXWorks-actions/cache/save@main
         with:
           path: /tmp/outputs/cache/docker
           key: ${{ steps.cache-image-restore.outputs.cache-primary-key }}
