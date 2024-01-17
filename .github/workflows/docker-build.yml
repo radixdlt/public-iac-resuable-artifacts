@@ -296,7 +296,7 @@ jobs:
         uses: RDXWorks-actions/setup-qemu-action@master
       - name: Set up Docker Context for Buildx
         run: |
-          docker context create builders
+          docker context create builders | true
       - name: Set up Docker Buildx
         uses: RDXWorks-actions/setup-buildx-action@master
         with:
