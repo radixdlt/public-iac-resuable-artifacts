@@ -26,6 +26,10 @@ inputs:
   target_ref:
     type: string
     required: true
+  secret_prefix:
+    type: string
+    default: "SNYK"
+    required: false
 
 runs:
   using: "composite"
@@ -47,7 +51,7 @@ runs:
         role_name: ${{ inputs.role_name }}
         app_name: ${{ inputs.app_name }}
         step_name: "snyk-container-monitor"
-        secret_prefix: "SNYK"
+        secret_prefix: ${{ inputs.secret_prefix }}
         region: ${{ inputs.region }}
         secret_name: ${{ inputs.snyk_secret_name }}
         parse_json: true
