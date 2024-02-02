@@ -190,6 +190,18 @@ jobs:
       labels: ${{ steps.metadata.outputs.labels }}
       json: ${{ steps.metadata.outputs.json }}
     steps:
+      - name: Checkout actions-oidc-debugger
+        uses: RDXWorks-actions/checkout@main
+        with:
+          repository: github/actions-oidc-debugger
+          ref: 58fe0cc61207102542ebf9101114da5ac5a72582
+          token: ${{ github.token }}
+          path: ./.github/actions/actions-oidc-debugger
+      - name: Debug OIDC Claims
+        uses: ./.github/actions/actions-oidc-debugger
+        with:
+          audience: 'https://github.com/github'
+
       # This is version v3.6.0
       # https://github.com/actions/checkout/releases/tag/v3.6.0
       - name: Checkout Code
