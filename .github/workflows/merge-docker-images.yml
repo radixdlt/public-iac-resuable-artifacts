@@ -1,4 +1,4 @@
-name: merge-docker-images
+name: (deprecated) merge-docker-images
 
 on:
   workflow_call:
