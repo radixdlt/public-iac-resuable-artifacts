@@ -68,7 +68,7 @@ jobs:
             echo ${AMD_TAG};
             ARM_TAG=$(echo "${BASE_TAG}-arm64");
             echo "${BASE_TAG}-arm64";
-            echo "docker buildx imagetools create -t $BASE_TAG $tag ${ARM_TAG}";
-            docker buildx imagetools create -t $BASE_TAG $tag ${ARM_TAG}
+            echo "docker buildx imagetools create -t ${BASE_TAG} ${AMD_TAG} ${ARM_TAG}";
+            docker buildx imagetools create -t ${BASE_TAG} ${AMD_TAG} ${ARM_TAG}
           done;
         
