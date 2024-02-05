@@ -1,4 +1,4 @@
-name: join-docker-images
+name: join-docker-images-all-tags
 
 on:
   workflow_call:
