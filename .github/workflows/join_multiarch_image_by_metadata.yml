@@ -1,0 +1,73 @@
+name: join-docker-images
+
+on:
+  workflow_call:
+    secrets:
+      role-to-assume:
+        required: true
+    inputs:
+      aws_dockerhub_secret:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: false
+      amd_meta_data_json:
+        type: string
+        required: true
+
+jobs:
+  join_multiarch_image_dockerhub:
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    environment: ${{ inputs.environment }}
+    name: Join Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: RDXWorks-actions/checkout@main
+        with:
+          fetch-depth: 0
+      ## Dockerhub
+      # This is version v1.7.0
+      # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.7.0
+      - name: "Configure AWS credentials"
+        uses: RDXWorks-actions/configure-aws-credentials@main
+        with:
+          role-to-assume: ${{ secrets.role-to-assume }}
+          aws-region: eu-west-2
+      - name: Read secrets from AWS Secrets Manager into environment variables
+        uses: RDXWorks-actions/aws-secretsmanager-get-secrets@main
+        with:
+          secret-ids: |
+            DOCKERHUB, ${{ inputs.aws_dockerhub_secret }}
+          parse-json-secrets: true
+      - name: Login to Docker Hub
+        uses: RDXWorks-actions/login-action@master
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
+      - name: Install and Configure Buildx
+        run: |
+          wget https://github.com/docker/buildx/releases/download/v0.10.4/buildx-v0.10.4.linux-amd64
+          echo "---- Configure Docker plugins ----"
+          mkdir -p /home/runner/.docker/cli-plugins/
+          mv buildx-v0.10.4.linux-amd64 /home/runner/.docker/cli-plugins/docker-buildx
+          chmod +x /home/runner/.docker/cli-plugins/docker-buildx
+          echo "---- Create build context ----"
+          docker context create merging
+          docker buildx create merging --use
+      - name: Join multiarch images
+        run: |
+          for AMD_TAG in $(echo ${{ inputs.amd_meta_data_json }} | jq -r '.tags[]'); 
+          do 
+            echo ${AMD_TAG} | rev |  cut -d- -f2- | rev;
+            BASE_TAG=$(echo $tag | rev |  cut -d- -f2- | rev);
+            echo ${AMD_TAG};
+            ARM_TAG=$(echo "${BASE_TAG}-arm64")
+            echo "${BASE_TAG}-arm64";
+            echo "docker buildx imagetools create -t $BASE_TAG $tag ${ARM_TAG}";
+            docker buildx imagetools create -t $BASE_TAG $tag ${ARM_TAG}
+          done;
+        
