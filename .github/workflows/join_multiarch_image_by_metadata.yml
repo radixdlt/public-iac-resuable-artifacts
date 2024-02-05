@@ -60,12 +60,13 @@ jobs:
           docker buildx create merging --use
       - name: Join multiarch images
         run: |
-          for AMD_TAG in $(echo ${{ inputs.amd_meta_data_json }} | jq -r '.tags[]'); 
+          JSON='${{ inputs.amd_meta_data_json }}'
+          for AMD_TAG in $(echo $JSON | jq -r '.tags[]'); 
           do 
-            echo ${AMD_TAG} | rev |  cut -d- -f2- | rev;
-            BASE_TAG=$(echo $tag | rev |  cut -d- -f2- | rev);
+            BASE_TAG=$(echo $AMD_TAG | rev |  cut -d- -f2- | rev);
+            echo ${BASE_TAG};
             echo ${AMD_TAG};
-            ARM_TAG=$(echo "${BASE_TAG}-arm64")
+            ARM_TAG=$(echo "${BASE_TAG}-arm64");
             echo "${BASE_TAG}-arm64";
             echo "docker buildx imagetools create -t $BASE_TAG $tag ${ARM_TAG}";
             docker buildx imagetools create -t $BASE_TAG $tag ${ARM_TAG}
