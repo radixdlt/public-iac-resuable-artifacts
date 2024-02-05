@@ -176,26 +176,6 @@ on:
         description: "The json from metadata-action"
         value: ${{ jobs.build-and-push.outputs.json }}
 jobs:
-
-  oidc_debug_test:
-    permissions:
-      contents: read
-      id-token: write
-    runs-on: ubuntu-latest
-    name: A test of the oidc debugger
-    steps:
-      - name: Checkout actions-oidc-debugger
-        uses: RDXWorks-actions/checkout@main
-        with:
-          repository: github/actions-oidc-debugger
-          ref: 58fe0cc61207102542ebf9101114da5ac5a72582
-          token: ${{ github.token }}
-          path: ./.github/actions/actions-oidc-debugger
-      - name: Debug OIDC Claims
-        uses: ./.github/actions/actions-oidc-debugger
-        with:
-          audience: 'https://github.com/github'
-
   build-and-push:
     permissions:
       id-token: write
@@ -203,7 +183,6 @@ jobs:
       pull-requests: write
       packages: write
     environment: ${{ inputs.environment }}
-    needs: oidc_debug_test
     runs-on: ${{ inputs.runs_on }}
     outputs:
       default_tag: ${{ steps.default_docker_tag.outputs.default_tag }}
