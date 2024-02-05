@@ -1,4 +1,4 @@
-name: merge-docker-images
+name: join-docker-images
 
 on:
   workflow_call:
