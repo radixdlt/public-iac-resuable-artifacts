@@ -1,4 +1,4 @@
-name: (deprecated) merge-docker-images
+name: join-docker-images-all-tags
 
 on:
   workflow_call:
@@ -12,16 +12,7 @@ on:
       environment:
         type: string
         required: false
-      image_tag:
-        type: string
-        required: true
-      image_name:
-        type: string
-        required: true
-      tag_suffix_1:
-        type: string
-        required: true
-      tag_suffix_2:
+      amd_meta_data_json:
         type: string
         required: true
 
@@ -69,6 +60,15 @@ jobs:
           docker buildx create merging --use
       - name: Join multiarch images
         run: |
-          docker buildx imagetools create -t docker.io/radixdlt/${{ inputs.image_name }}:${{ inputs.image_tag }} \
-            docker.io/radixdlt/${{ inputs.image_name }}:${{ inputs.image_tag }}-${{ inputs.tag_suffix_1 }} \
-            docker.io/radixdlt/${{ inputs.image_name }}:${{ inputs.image_tag }}-${{ inputs.tag_suffix_2 }}
+          JSON='${{ inputs.amd_meta_data_json }}'
+          for AMD_TAG in $(echo $JSON | jq -r '.tags[]'); 
+          do 
+            BASE_TAG=$(echo $AMD_TAG | rev |  cut -d- -f2- | rev);
+            echo ${BASE_TAG};
+            echo ${AMD_TAG};
+            ARM_TAG=$(echo "${BASE_TAG}-arm64");
+            echo "${BASE_TAG}-arm64";
+            echo "docker buildx imagetools create -t ${BASE_TAG} ${AMD_TAG} ${ARM_TAG}";
+            docker buildx imagetools create -t ${BASE_TAG} ${AMD_TAG} ${ARM_TAG}
+          done;
+        
