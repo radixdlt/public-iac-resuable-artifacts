@@ -30,11 +30,19 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install AWS CLI
+    - name: Install AWS CLI for Linux
+      if: runner.os == 'Linux'
       uses: RDXWorks-actions/install-aws-cli-action@master
       with:
         version: 2
 
+    - name: Install AWS CLI for MacOS
+      if: runner.os == 'MacOS'
+      shell: bash
+      run: |
+        curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+        sudo installer -pkg AWSCLIV2.pkg -target /
+          
     - name: Configure AWS credentials to fetch secrets
       uses: RDXWorks-actions/configure-aws-credentials@main
       with:
