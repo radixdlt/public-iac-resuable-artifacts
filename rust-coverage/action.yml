@@ -15,7 +15,7 @@ runs:
       run: |
         rm -fr ~/.cargo/registry
         cargo llvm-cov nextest ${{ inputs.flags }} --html
-    - uses: actions/upload-artifact@v3
+    - uses: RDXWorks-actions/upload-artifact@main
       with:
         name: ${{ inputs.coverage_report_name }}
         path: target/llvm-cov/html/
