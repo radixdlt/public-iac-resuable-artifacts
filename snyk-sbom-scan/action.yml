@@ -45,7 +45,7 @@ runs:
     - name: Install cdxgen
       shell: bash
       run: |
-        npm install @cyclonedx/cdxgen -g
+        npm install @cyclonedx/cdxgen@10.4.2 -g
         cdxgen -v
 
     - name: Generate SBOM
