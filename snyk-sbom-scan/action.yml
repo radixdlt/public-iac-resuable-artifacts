@@ -54,10 +54,14 @@ runs:
 
     - name: Generate SBOM
       shell: bash
-      run: |
-        pwd
-        ls
+        cdxgen -r --spec-version 1.5 -o sbom.json
         cat sbom.json | jq . | wc -l
+
+    - name: Upload SBOM
+      uses: RDXWorks-actions/upload-artifact@main
+      with:
+        name: sbom
+        path: sbom.json
 
     - name: Scan SBOM
       shell: bash
