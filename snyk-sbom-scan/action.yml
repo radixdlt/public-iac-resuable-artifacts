@@ -14,9 +14,6 @@ inputs:
   app_name:
     type: string
     required: true
-  snyk_org_id:
-    type: string
-    required: true
 
 runs:
   using: "composite"
@@ -58,6 +55,5 @@ runs:
     - name: Scan SBOM
       shell: bash
       run: |
-        snyk sbom test --experimental --file=sbom.json --org=${{ inputs.snyk_org_id }} > sbom_scan_result.txt
+        snyk sbom test --experimental --file=sbom.json --org=${{ env.SNYK_NETWORK_ORG_ID }} > sbom_scan_result.txt
         cat sbom_scan_result.txt
-        
