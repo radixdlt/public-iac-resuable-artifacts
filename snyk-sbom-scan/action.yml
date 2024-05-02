@@ -33,12 +33,12 @@ runs:
 
     - uses: RDXWorks-actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561 # v2.5.1
       with:
-        node-version: '20'
+        node-version: '21'
 
     - name: Install snyk
       shell: bash
       run: |
-        npm install snyk -g
+        npm install snyk@1.1290.0 -g
         snyk -v
         snyk auth ${{ env.SNYK_TOKEN }}
 
