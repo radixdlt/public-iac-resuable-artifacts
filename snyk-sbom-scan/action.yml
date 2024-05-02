@@ -49,12 +49,14 @@ runs:
     - name: Install cdxgen
       shell: bash
       run: |
-        brew install cdxgen
+        npm install @cyclonedx/cdxgen@10.4.2 -g
         cdxgen -v
 
     - name: Generate SBOM
       shell: bash
       run: |
+        ls
+        pwd
         cdxgen -r --spec-version 1.5 -o sbom.json
         cat sbom.json | jq . | wc -l
 
