@@ -55,4 +55,4 @@ runs:
     - name: Scan SBOM
       shell: bash
       run: |
-        snyk sbom test --experimental --file=sbom.json --org=${{ env.SNYK_NETWORK_ORG_ID }} -d
+        snyk sbom test --experimental --file=sbom.json --org=${{ env.SNYK_BUILDERS_ORG_ID }} -d
