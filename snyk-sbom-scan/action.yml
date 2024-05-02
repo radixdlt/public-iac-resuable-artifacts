@@ -46,16 +46,17 @@ runs:
         snyk -v
         snyk auth ${{ env.SNYK_TOKEN }}
 
-#    - name: Install cdxgen
-#      shell: bash
-#      run: |
-#        npm install @cyclonedx/cdxgen@10.4.2 -g
-#        cdxgen -v
+    - name: Install cdxgen
+      shell: bash
+      run: |
+        npm install @cyclonedx/cdxgen@10.4.2 -g
+        cdxgen -v
 
     - name: Generate SBOM
       shell: bash
       run: |
-        docker run --rm -v /tmp:/tmp -v $(pwd):/app:rw -t ghcr.io/cyclonedx/cdxgen -r /app -o /app/sbom.json
+        pwd
+        ls
         cat sbom.json | jq . | wc -l
 
     - name: Scan SBOM
