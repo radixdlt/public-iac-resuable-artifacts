@@ -1,0 +1,63 @@
+name: snyk-sbom-scan
+
+inputs:
+  role_name:
+    type: string
+    required: true
+  region:
+    type: string
+    required: false
+    default: eu-west-2
+  snyk_secret_name:
+    type: string
+    required: true
+  app_name:
+    type: string
+    required: true
+  snyk_org_id:
+    type: string
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: RDXWorks-actions/checkout@main
+
+    - name: Fetch Snyk secrets
+      uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+      with:
+        role_name: ${{ inputs.role_name }}
+        app_name: ${{ inputs.app_name }}
+        step_name: "snyk-sbom-scan"
+        secret_prefix: "SNYK"
+        region: ${{ inputs.region }}
+        secret_name: ${{ inputs.snyk_secret_name }}
+        parse_json: true
+
+    - uses: RDXWorks-actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561 # v2.5.1
+      with:
+        node-version: '18'
+
+    - name: Install snyk
+      shell: bash
+      run: |
+        npm install snyk -g
+        snyk -v
+        snyk auth ${{ env.SNYK_TOKEN }}
+
+    - name: Install cdxgen
+      shell: bash
+      run: |
+        npm install @cyclonedx/cdxgen -g
+        cdxgen -v
+
+    - name: Generate SBOM
+      shell: bash
+      run: cdxgen -r --spec-version 1.5 -o sbom.json
+
+    - name: Scan SBOM
+      shell: bash
+      run: |
+        snyk sbom test --experimental --file=sbom.json --org=${{ inputs.snyk_org_id }} > sbom_scan_result.txt
+        cat sbom_scan_result.txt
+        
