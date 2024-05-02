@@ -50,9 +50,7 @@ runs:
 
     - name: Generate SBOM
       shell: bash
-      run: |
-        cdxgen -r --spec-version 1.5 -o sbom.json
-        cat sbom.json | jq .
+      run: cdxgen -r --spec-version 1.5 -o sbom.json
 
     - name: Scan SBOM
       shell: bash
