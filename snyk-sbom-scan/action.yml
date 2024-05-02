@@ -33,7 +33,7 @@ runs:
 
     - uses: RDXWorks-actions/setup-node@1f8c6b94b26d0feae1e387ca63ccbdc44d27b561 # v2.5.1
       with:
-        node-version: '18'
+        node-version: '20'
 
     - name: Install snyk
       shell: bash
@@ -50,7 +50,9 @@ runs:
 
     - name: Generate SBOM
       shell: bash
-      run: cdxgen -r --spec-version 1.5 -o sbom.json
+      run: |
+        cdxgen -r --spec-version 1.5 -o sbom.json
+        cat sbom.json | jq .
 
     - name: Scan SBOM
       shell: bash
