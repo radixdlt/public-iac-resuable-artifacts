@@ -18,6 +18,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: RDXWorks-actions/toolchain@master
+      with:
+        toolchain: '1.70.0'
+
     - uses: RDXWorks-actions/checkout@main
 
     - name: Fetch Snyk secrets
