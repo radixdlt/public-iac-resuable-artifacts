@@ -6,15 +6,15 @@ on:
       role-to-assume:
         required: true
     inputs:
-      role-name:
+      role_name:
         type: string
         required: true
-      secret-name:
+      secret_name:
         type: string
         required: true
 
 jobs:
-  analyze-deps:
+  analyze_deps:
     name: Analyze dependencies with Phylum
     permissions:
       contents: read
@@ -36,12 +36,12 @@ jobs:
       - name: Fetch Phylum secrets
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: ${{ inputs.role-name }}
+          role_name: ${{ inputs.role_name }}
           app_name: "phylum-analyze"
           step_name: "analyze-deps"
           secret_prefix: "PHYLUM"
           region: eu-west-2
-          secret_name: ${{ inputs.secret-name }}
+          secret_name: ${{ inputs.secret_name }}
           parse_json: true
       - name: Analyze dependencies
         run: phylum-ci -vv
