@@ -3,7 +3,7 @@ name: Phylum analyze
 on:
   workflow_call:
     secrets:
-      role-to-assume:
+      role_to_assume:
         required: true
     inputs:
       role_name:
@@ -31,7 +31,7 @@ jobs:
       - name: Configure AWS credentials
         uses: RDXWorks-actions/configure-aws-credentials@main
         with:
-          role-to-assume: ${{ secrets.role-to-assume }}
+          role-to-assume: ${{ secrets.role_to_assume }}
           aws-region: eu-west-2
       - name: Fetch Phylum secrets
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
