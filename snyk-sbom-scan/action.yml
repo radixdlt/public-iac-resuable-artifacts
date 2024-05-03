@@ -42,7 +42,7 @@ runs:
     - name: Install snyk
       shell: bash
       run: |
-        npm install snyk@1.1290.0 -g
+        npm install snyk@1.1291.0 -g
         snyk -v
         snyk auth ${{ env.SNYK_TOKEN }}
 
