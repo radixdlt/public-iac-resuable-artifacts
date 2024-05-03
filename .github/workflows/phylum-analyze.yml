@@ -1,0 +1,47 @@
+name: Phylum analyze
+
+on:
+  workflow_call:
+    secrets:
+      role-to-assume:
+        required: true
+    inputs:
+      role-name:
+        type: string
+        required: true
+      secret-name:
+        type: string
+        required: true
+
+jobs:
+  analyze-deps:
+    name: Analyze dependencies with Phylum
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    container:
+      image: docker://ghcr.io/phylum-dev/phylum-ci:slim
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: RDXWorks-actions/checkout@main
+        with:
+          fetch-depth: 0
+      - name: Configure AWS credentials
+        uses: RDXWorks-actions/configure-aws-credentials@main
+        with:
+          role-to-assume: ${{ secrets.role-to-assume }}
+          aws-region: eu-west-2
+      - name: Fetch Phylum secrets
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: ${{ inputs.role-name }}
+          app_name: "phylum-analyze"
+          step_name: "analyze-deps"
+          secret_prefix: "PHYLUM"
+          region: eu-west-2
+          secret_name: ${{ inputs.secret-name }}
+          parse_json: true
+      - name: Analyze dependencies
+        run: phylum-ci -vv
