@@ -3,7 +3,7 @@ name: Phylum analyze
 on:
   workflow_call:
     secrets:
-      PHYLUM_API_KEY:
+      phylum_api_key:
         required: true
     inputs:
       role_name:
@@ -25,7 +25,7 @@ jobs:
       image: phylumio/phylum-ci:0.44.0-CLIv6.3.0-slim
       env:
         GITHUB_TOKEN: ${{ github.token }}
-        PHYLUM_API_KEY: ${{ secrets.PHYLUM_API_KEY }}
+        PHYLUM_API_KEY: ${{ secrets.phylum_api_key }}
     steps:
       - uses: RDXWorks-actions/checkout@main
         with:
