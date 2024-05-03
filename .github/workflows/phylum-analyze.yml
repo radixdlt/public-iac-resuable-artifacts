@@ -19,7 +19,7 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     container:
-      image: docker://ghcr.io/phylum-dev/phylum-ci:slim
+      image: phylumio/phylum-ci:0.44.0-CLIv6.3.0
       env:
         GITHUB_TOKEN: ${{ github.token }}
     steps:
