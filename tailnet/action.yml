@@ -10,6 +10,10 @@ inputs:
   secret_name:
     type: string
     required: true
+  tailscale_client_version:
+    type: string
+    required: false
+    default: "1.42.0"
 
 runs:
   using: "composite"
@@ -29,3 +33,4 @@ runs:
       uses: RDXWorks-actions/github-action@main
       with:
         authkey: ${{ env.TAILSCALE_AUTHKEY }}
+        version: ${{ inputs.tailscale_client_version }}
