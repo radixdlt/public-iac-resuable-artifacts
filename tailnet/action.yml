@@ -10,6 +10,9 @@ inputs:
   secret_name:
     type: string
     required: true
+  tailscale_tag:
+    default: "tag:ci"
+    required: false
 
 runs:
   using: "composite"
@@ -30,4 +33,4 @@ runs:
       with:
         oauth-client-id: ${{ env.TAILSCALE_CLIENT_ID }}
         oauth-secret: ${{ env.TAILSCALE_CLIENT_SECRET }}
-        tags: tag:ci
+        tags: ${{ inputs.tailscale_tag }}
