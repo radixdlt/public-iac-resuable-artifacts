@@ -31,4 +31,6 @@ runs:
     - name: "Connect to Tailnet"
       uses: RDXWorks-actions/github-action@main
       with:
-        authkey: ${{ env.TAILSCALE_AUTHKEY }}
+        oauth-client-id: ${{ env.TAILSCALE_CLIENT_ID }}
+        oauth-secret: ${{ env.TAILSCALE_CLIENT_SECRET }}
+        tags: ${{ inputs.tailscale_tag }}
