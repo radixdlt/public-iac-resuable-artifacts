@@ -30,3 +30,4 @@ runs:
       with:
         oauth-client-id: ${{ env.TAILSCALE_CLIENT_ID }}
         oauth-secret: ${{ env.TAILSCALE_CLIENT_SECRET }}
+        tags: tag:ci
