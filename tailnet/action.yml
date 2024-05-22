@@ -25,7 +25,7 @@ runs:
         secret_name: ${{ inputs.secret_name }}
         parse_json: true
 
-    - name: Set tailscale_tag output
+    - name: "Set tailscale_tag output"
       id: set_tailscale_tag
       shell: bash
       run: |
