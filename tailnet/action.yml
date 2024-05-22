@@ -10,9 +10,6 @@ inputs:
   secret_name:
     type: string
     required: true
-  tailscale_tag:
-    default: "tag:ci"
-    required: false
 
 runs:
   using: "composite"
@@ -28,9 +25,19 @@ runs:
         secret_name: ${{ inputs.secret_name }}
         parse_json: true
 
+    - name: Set tailscale_tag output
+      id: set_tailscale_tag
+      shell: bash
+      run: |
+        if [[ "${{ inputs.secret_name }}" == *"tailscale-public-workflows"* ]]; then
+          echo "tailscale_tag=tag:gh-public-workflows" >> $GITHUB_OUTPUT
+        else
+          echo "tailscale_tag=tag:ci" >> $GITHUB_OUTPUT
+        fi
+
     - name: "Connect to Tailnet"
       uses: RDXWorks-actions/github-action@main
       with:
         oauth-client-id: ${{ env.TAILSCALE_CLIENT_ID }}
         oauth-secret: ${{ env.TAILSCALE_CLIENT_SECRET }}
-        tags: ${{ inputs.tailscale_tag }}
+        tags: ${{ steps.set_tailscale_tag.outputs.tailscale_tag }}"
