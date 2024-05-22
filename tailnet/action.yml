@@ -40,4 +40,4 @@ runs:
       with:
         oauth-client-id: ${{ env.TAILSCALE_CLIENT_ID }}
         oauth-secret: ${{ env.TAILSCALE_CLIENT_SECRET }}
-        tags: ${{ steps.set_tailscale_tag.outputs.tailscale_tag }}"
+        tags: ${{ steps.set_tailscale_tag.outputs.tailscale_tag }}
