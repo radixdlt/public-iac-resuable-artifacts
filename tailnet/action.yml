@@ -10,6 +10,10 @@ inputs:
   secret_name:
     type: string
     required: true
+  tailscale_version:
+    type: string
+    required: false
+    default: "1.66.3"
 
 runs:
   using: "composite"
@@ -41,3 +45,4 @@ runs:
         oauth-client-id: ${{ env.TAILSCALE_CLIENT_ID }}
         oauth-secret: ${{ env.TAILSCALE_CLIENT_SECRET }}
         tags: ${{ steps.set_tailscale_tag.outputs.tailscale_tag }}
+        version: ${{ inputs.tailscale_version }}
