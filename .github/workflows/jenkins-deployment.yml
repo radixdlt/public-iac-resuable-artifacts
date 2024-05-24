@@ -1,0 +1,207 @@
+name: trigger-jenkins-deployment
+
+on:
+  workflow_call:
+    inputs:
+      aws_region:
+        description: "AWS region"
+        type: string
+        default: "eu-west-2"
+        required: false
+      aws_eks_cluster:
+        default: "rdx-works-main-dev"
+        type: string
+      aws_iam_role_name:
+        default: "jenkins-radquest-pr-deployer"
+        required: true
+        type: string
+      tailscale_client_version:
+        description: "Tailscale client version."
+        type: string
+        default: "1.66.4"
+        required: false
+      application_name:
+        type: string
+        required: true
+        default: ""
+      helm_dir:
+        default: "deploy/helm"
+        type: string
+      helm_command:
+        default: "apply --wait"
+        type: string
+      helmfile_environment:
+        default: "pr"
+        required: true
+        type: string
+      helmfile_extra_vars:
+        default: ""
+        required: true
+        type: string
+      create_subnamespace:
+        description: "If PR env this needs to be true."
+        default: "false"
+        required: false
+        type: string
+      hierarchical_namespace:
+        description: "If input.create_subnamespace this needs to be provided."
+        default: ""
+        required: false
+        type: string
+      kubernetes_namespace:
+        default: ""
+        required: true
+        type: string
+      jenkins_job_name:
+        default: ""
+        required: true
+        type: string
+      github_environment:
+        description: "Name of GitHub environment"
+        required: false
+        default: ""
+        type: string
+    secrets:
+      secrets_account_id:
+        description: 'AWS secrets account ID.'
+        required: true
+      aws_deployment_account_id:
+        description: 'AWS account ID of deployment role.'
+        required: true
+
+jobs:
+  deploy:
+    name: "Deploy"
+    environment: ${{ inputs.github_environment }}
+    permissions:
+      id-token: write
+      contents: read
+      deployments: write
+      pull-requests: write
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+    - uses: RDXWorks-actions/checkout@main
+
+    - uses: RDXWorks-actions/deployment-action@main
+      name: Create GitHub deployment
+      if: ${{ inputs.github_environment != '' }}
+      id: deployment
+      with:
+        token: "${{ github.token }}"
+        environment: ${{ inputs.github_environment }}
+        transient-environment: true
+        production-environment: false
+
+    - name: Setup helmfile and helm
+      uses: RDXWorks-actions/setup-helmfile@master
+
+    - name: Connect to tailnet
+      uses: radixdlt/public-iac-resuable-artifacts/tailnet@main
+      with:
+        region: "eu-west-2"
+        role_name: 'arn:aws:iam::${{ secrets.secrets_account_id }}:role/gh-common-secrets-read-access'
+        secret_name: 'arn:aws:secretsmanager:eu-west-2:${{ secrets.secrets_account_id }}:secret:github-actions/common/tailscale-public-workflows-DpiE80'
+        tailscale_version: ${{ inputs.tailscale_client_version }}
+
+    - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+      with:
+        role_name: 'arn:aws:iam::${{ secrets.secrets_account_id }}:role/gh-common-secrets-read-access'
+        app_name: 'radquest'
+        step_name: 'deploy-pr'
+        secret_prefix: 'GH'
+        secret_name: 'arn:aws:secretsmanager:eu-west-2:${{ secrets.secrets_account_id }}:secret:github-actions/common/jenkins-credentials-RTHKoO'
+        parse_json: true
+
+    - name: Trigger jenkins job to deploy PR
+      uses: RDXWorks-actions/jenkins-job-trigger-action@master
+      with:
+        jenkins_url: ${{ env.GH_JENKINS_URL }}
+        jenkins_user: ${{ env.GH_JENKINS_USER }}
+        jenkins_token: ${{ env.GH_JENKINS_API_TOKEN }}
+        job_name: "${{ inputs.jenkins_job_name }}"
+        job_params: |
+          {
+            "git_repo" : "${{ github.repository }}",
+            "git_branch" : "${{ github.head_ref }}",
+            "helmfile_environment": "${{ inputs.helmfile_environment }}",
+            "hierarchical_namespace": "${{ inputs.hierarchical_namespace }}",
+            "namespace" : "${{ inputs.kubernetes_namespace }}",
+            "create_subnamespace" : "${{ inputs.create_subnamespace }}",
+            "aws_region" : "${{ inputs.aws_region }}",
+            "aws_iam_role": "arn:aws:iam::${{ secrets.aws_deployment_account_id }}:role/${{ inputs.aws_iam_role_name }}",
+            "aws_eks_cluster" : "${{ inputs.aws_eks_cluster }}",
+            "helm_folder" : "${{ inputs.helm_dir }}",
+            "helmfile_extra_vars" : "${{ inputs.helmfile_extra_vars }}"
+          }
+        job_timeout: '3600'
+        fetch_logs: 'false'
+
+    - name: Write PR URL to GH summary
+      if: ${{ github.event.pull_request }}
+      run: |
+        echo "PR URL is: https://${{ inputs.application_name }}-pr-${{ github.event.number }}.rdx-works-main.extratools.works" >> $GITHUB_STEP_SUMMARY
+
+    - name: Update deployment status (success)
+      if: ${{success() &&  inputs.github_environment != '' }}
+      uses: RDXWorks-actions/deployment-status@main
+      with:
+        token: "${{ github.token }}"
+        state: "success"
+        deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+
+    - name: Update deployment status (failure)
+      if: ${{ failure() && inputs.github_environment != '' }}
+      uses: RDXWorks-actions/deployment-status@main
+      with:
+        token: "${{ github.token }}"
+        state: "failure"
+        deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+
+    - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+      name: Fetch SNYK creds
+      with:
+        role_name: "arn:aws:iam::${{ secrets.secrets_account_id }}:role/gh-common-secrets-read-access"
+        app_name: "deploy"
+        step_name: "snyk-iac"
+        secret_prefix: "SNYK"
+        secret_name: "arn:aws:secretsmanager:eu-west-2:${{ secrets.secrets_account_id }}:secret:github-actions/common/snyk-credentials-rXRpuX"
+        parse_json: true
+
+    - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+      name: Fetch HELM creds
+      with:
+        role_name: "arn:aws:iam::${{ secrets.secrets_account_id }}:role/gh-common-secrets-read-access"
+        app_name: "deploy"
+        step_name: "snyk-iac"
+        secret_prefix: "GH"
+        secret_name: "arn:aws:secretsmanager:eu-west-2:${{ secrets.secrets_account_id }}:secret:github-actions/common/helm-credentials-EP1CU3"
+        parse_json: true
+  
+
+    - name: Snyk IaC scan
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      run: |
+        npm install snyk -g
+        snyk -v
+        snyk auth ${{ env.SNYK_TOKEN }}
+
+        if [ -z "$HELMFILE_EXTRA_VARS" ]; then
+          INPUT_VALUES=""
+          echo "No helmfile input parameters have been provided!"
+        else
+          INPUT_VALUES="--state-values-set=$HELMFILE_EXTRA_VARS"
+          INPUT_VALUES=$( echo $INPUT_VALUES | tr -d "[:blank:]" )
+          echo "$INPUT_VALUES"
+        fi
+
+        cd ${{ inputs.helm_dir }}
+        helmfile --environment $HELMFILE_ENV --namespace $APPLICATION_NS $INPUT_VALUES template --output-dir-template helm-${{ inputs.application_name }}
+
+        snyk iac test --org=${{ env.SNYK_DEVOPS_ORG_ID }} --target-name=helm-${{ inputs.application_name }} --target-reference=${{ inputs.helmfile_environment }} --report helm-${{ inputs.application_name }} || true
+      env:
+        APPLICATION_NS: ${{ inputs.kubernetes_namespace }}
+        HELMFILE_ENV: ${{ inputs.helmfile_environment }}
+        HELMFILE_EXTRA_VARS: ${{ inputs.helmfile_extra_vars }}
+        HELM_GH_USER: ${{ env.GH_HELM_GH_USER }}
+        HELM_GH_PASS: ${{ env.GH_HELM_GH_PASS }}
