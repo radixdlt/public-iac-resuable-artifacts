@@ -1,0 +1,26 @@
+name: Phylum analyze
+
+on:
+  workflow_call:
+    secrets:
+      phylum_api_key:
+        required: true
+
+jobs:
+  phylum_analyze:
+    name: Analyze dependencies with Phylum
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: RDXWorks-actions/checkout@main
+        with:
+          fetch-depth: 0
+      - name: Analyze dependencies
+        uses: RDXWorks-actions/phylum-analyze-pr-action@main
+        with:
+          phylum_token: ${{ secrets.phylum_api_key }}
+          cmd: phylum-ci -vv --force-analysis --all-deps
