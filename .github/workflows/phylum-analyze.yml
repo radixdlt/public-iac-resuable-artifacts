@@ -23,4 +23,4 @@ jobs:
         uses: RDXWorks-actions/phylum-analyze-pr-action@main
         with:
           phylum_token: ${{ secrets.phylum_api_key }}
-          cmd: phylum-ci -vv  --audit --force-analysis --all-deps
+          cmd: phylum-ci -vv --force-analysis --all-deps
