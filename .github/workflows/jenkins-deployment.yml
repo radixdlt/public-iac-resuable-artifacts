@@ -61,6 +61,11 @@ on:
         required: false
         default: ""
         type: string
+      github_branch:
+        description: "Name of GitHub branch to deploy"
+        required: true
+        default: ""
+        type: string
     secrets:
       secrets_account_id:
         description: 'AWS secrets account ID.'
@@ -123,7 +128,7 @@ jobs:
         job_params: |
           {
             "git_repo" : "${{ github.repository }}",
-            "git_branch" : "${{ github.head_ref }}",
+            "git_branch" : "${{ inputs.github_branch }}",
             "helmfile_environment": "${{ inputs.helmfile_environment }}",
             "hierarchical_namespace": "${{ inputs.hierarchical_namespace }}",
             "namespace" : "${{ inputs.kubernetes_namespace }}",
