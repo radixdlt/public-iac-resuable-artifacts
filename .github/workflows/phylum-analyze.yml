@@ -16,8 +16,6 @@ on:
     secrets:
       phylum_api_key:
         required: true
-      github_token:
-        required: false
 
 jobs:
   phylum_analyze:
