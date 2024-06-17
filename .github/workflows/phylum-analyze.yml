@@ -38,7 +38,7 @@ jobs:
         uses: RDXWorks-actions/phylum-analyze-pr-action@main
         with:
           phylum_token: ${{ secrets.phylum_api_key }}
-          cmd: phylum-ci -vv --force-analysis --all-deps --skip-comments
+          cmd: phylum-ci --force-analysis --all-deps --skip-comments
       - name: Post Phylum Report Comment
         env:
           REPO: ${{ inputs.github_repository }}
