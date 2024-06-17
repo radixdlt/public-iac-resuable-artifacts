@@ -38,7 +38,7 @@ jobs:
         uses: RDXWorks-actions/phylum-analyze-pr-action@main
         with:
           phylum_token: ${{ secrets.phylum_api_key }}
-          cmd: phylum-ci --force-analysis --all-deps --skip-comments
+          cmd: phylum-ci --force-analysis --all-deps --skip-comments -qq
       - name: Post Phylum Report Comment
         env:
           REPO: ${{ inputs.github_repository }}
@@ -47,7 +47,7 @@ jobs:
           PHYLUM_GROUP_NAME: ${{ inputs.phylum_group_name }}
         run: |
           COMMENT_TITLE="Phylum Report"
-          COMMENT_BODY="https://app.phylum.io/projects/${{ secrets.phylum_project_id }}?label=GitHub-Actions_PR%23${PR_NUMBER}_${BRANCH_NAME}&group=${PHYLUM_GROUP_NAME}"
+          COMMENT_BODY="View this project in the Phylum UI (https://app.phylum.io/projects/${{ secrets.phylum_project_id }}?label=GitHub-Actions_PR%23${PR_NUMBER}_${BRANCH_NAME}&group=${PHYLUM_GROUP_NAME})"
           
           # Check if a comment already exists and update it
           EXISTING_COMMENT_ID=$(gh api repos/${REPO}/issues/${PR_NUMBER}/comments | jq -r '.[] | select(.body | contains("Phylum Report")) | .id')
