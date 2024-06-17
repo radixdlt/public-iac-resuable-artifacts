@@ -5,12 +5,16 @@ on:
     inputs:
       phylum_pr_number:
         required: false
+        type: string
       phylum_pr_name:
         required: false
+        type: string
       phylum_group_name:
         required: false
+        type: string
       github_repository:
         required: false
+        type: string
     secrets:
       phylum_api_key:
         required: true
