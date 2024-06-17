@@ -7,8 +7,6 @@ on:
         required: false
       phylum_pr_name:
         required: false
-      phylum_project_id:
-        required: false
       phylum_group_name:
         required: false
       github_repository:
@@ -16,7 +14,8 @@ on:
     secrets:
       phylum_api_key:
         required: true
-
+      phylum_project_id:
+        required: false
 jobs:
   phylum_analyze:
     name: Analyze dependencies with Phylum
@@ -37,15 +36,13 @@ jobs:
           cmd: phylum-ci -vv --force-analysis --all-deps --skip-comments
       - name: Post Phylum Report Comment
         env:
-          GITHUB_TOKEN: ${{ secrets.github_token }}
           REPO: ${{ inputs.github_repository }}
           PR_NUMBER: ${{ inputs.phylum_pr_number }}
           BRANCH_NAME: ${{ inputs.phylum_pr_name }}
-          PHYLUM_ID: ${{ inputs.phylum_project_id }}
           PHYLUM_GROUP_NAME: ${{ inputs.phylum_group_name }}
         run: |
           COMMENT_TITLE="Phylum Report"
-          COMMENT_BODY="https://app.phylum.io/projects/${PHYLUM_ID}?label=GitHub-Actions_PR%23${PR_NUMBER}_${BRANCH_NAME}&group=${PHYLUM_GROUP_NAME}"
+          COMMENT_BODY="https://app.phylum.io/projects/${{ secrets.phylum_project_id }}?label=GitHub-Actions_PR%23${PR_NUMBER}_${BRANCH_NAME}&group=${PHYLUM_GROUP_NAME}"
           
           # Check if a comment already exists and update it
           EXISTING_COMMENT_ID=$(gh api repos/${REPO}/issues/${PR_NUMBER}/comments | jq -r '.[] | select(.body | contains("Phylum Report")) | .id')
