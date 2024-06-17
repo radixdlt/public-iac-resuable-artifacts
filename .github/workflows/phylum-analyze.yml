@@ -34,12 +34,7 @@ jobs:
       - uses: RDXWorks-actions/checkout@main
         with:
           fetch-depth: 0
-      - name: Analyze dependencies
-        uses: RDXWorks-actions/phylum-analyze-pr-action@main
-        with:
-          phylum_token: ${{ secrets.phylum_api_key }}
-          cmd: phylum-ci --force-analysis --all-deps --skip-comments -qq
-      - name: Post Phylum Report Comment
+      - name: Phylum Report Comment
         env:
           REPO: ${{ inputs.github_repository }}
           PR_NUMBER: ${{ inputs.phylum_pr_number }}
@@ -56,3 +51,8 @@ jobs:
           else
             gh api repos/${REPO}/issues/${PR_NUMBER}/comments -f body="${COMMENT_TITLE}\n\n${COMMENT_BODY}"
           fi
+      - name: Analyze dependencies
+        uses: RDXWorks-actions/phylum-analyze-pr-action@main
+        with:
+          phylum_token: ${{ secrets.phylum_api_key }}
+          cmd: phylum-ci --force-analysis --all-deps --skip-comments -qq
