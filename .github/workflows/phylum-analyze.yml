@@ -3,6 +3,9 @@ name: Phylum analyze
 on:
   workflow_call:
     inputs:
+      phylum_project_id:
+        required: false
+        type: string
       phylum_pr_number:
         required: false
         type: string
@@ -18,8 +21,6 @@ on:
     secrets:
       phylum_api_key:
         required: true
-      phylum_project_id:
-        required: false
 jobs:
   phylum_analyze:
     name: Analyze dependencies with Phylum
