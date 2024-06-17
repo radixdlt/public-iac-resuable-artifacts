@@ -36,6 +36,7 @@ jobs:
           fetch-depth: 0
       - name: Phylum Report Comment
         env:
+          GH_TOKEN: ${{ github.token }}
           REPO: ${{ inputs.github_repository }}
           PR_NUMBER: ${{ inputs.phylum_pr_number }}
           BRANCH_NAME: ${{ inputs.phylum_pr_name }}
