@@ -18,6 +18,10 @@ on:
       github_repository:
         required: false
         type: string
+      add_report_comment_to_pull_request:
+        required: false
+        type: boolean
+        default: false
     secrets:
       phylum_api_key:
         required: true
@@ -40,6 +44,7 @@ jobs:
           phylum_token: ${{ secrets.phylum_api_key }}
           cmd: phylum-ci --force-analysis --all-deps --skip-comments -qq --audit > /dev/null 2>&1
       - name: Phylum Report Comment
+        if: ${{ inputs.add_report_comment_to_pull_request == true }}
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ inputs.github_repository }}
