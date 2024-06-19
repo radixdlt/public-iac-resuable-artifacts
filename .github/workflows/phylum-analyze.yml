@@ -2,10 +2,29 @@ name: Phylum analyze
 
 on:
   workflow_call:
+    inputs:
+      phylum_project_id:
+        required: false
+        type: string
+      phylum_pr_number:
+        required: false
+        type: string
+      phylum_pr_name:
+        required: false
+        type: string
+      phylum_group_name:
+        required: false
+        type: string
+      github_repository:
+        required: false
+        type: string
+      add_report_comment_to_pull_request:
+        required: false
+        type: boolean
+        default: false
     secrets:
       phylum_api_key:
         required: true
-
 jobs:
   phylum_analyze:
     name: Analyze dependencies with Phylum
@@ -23,4 +42,19 @@ jobs:
         uses: RDXWorks-actions/phylum-analyze-pr-action@main
         with:
           phylum_token: ${{ secrets.phylum_api_key }}
-          cmd: phylum-ci -vv --force-analysis --all-deps
+          cmd: phylum-ci --force-analysis --all-deps --skip-comments -qq --audit > /dev/null 2>&1
+      - name: Phylum Report Comment
+        if: ${{ inputs.add_report_comment_to_pull_request == true }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ inputs.github_repository }}
+          PR_NUMBER: ${{ inputs.phylum_pr_number }}
+          BRANCH_NAME: ${{ inputs.phylum_pr_name }}
+          PHYLUM_GROUP_NAME: ${{ inputs.phylum_group_name }}
+        run: |
+          # Check if a comment already exists
+          EXISTING_COMMENT_ID=$(gh api repos/${REPO}/issues/${PR_NUMBER}/comments | jq -r '.[] | select(.body | contains("Phylum Report")) | .id')
+          if [ -z "$EXISTING_COMMENT_ID" ]; then
+            COMMENT_BODY="### [Phylum Report Link](https://app.phylum.io/projects/${{ inputs.phylum_project_id }}?label=GitHub-Actions_PR%23${PR_NUMBER}_${BRANCH_NAME}&group=${PHYLUM_GROUP_NAME})"          
+            gh api repos/${REPO}/issues/${PR_NUMBER}/comments -f body="${COMMENT_BODY}"
+          fi
