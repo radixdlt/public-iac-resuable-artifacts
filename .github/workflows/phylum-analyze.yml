@@ -42,7 +42,7 @@ jobs:
         uses: RDXWorks-actions/phylum-analyze-pr-action@main
         with:
           phylum_token: ${{ secrets.phylum_api_key }}
-          cmd: phylum-ci --force-analysis --all-deps --skip-comments -qq --audit > /dev/null 2>&1 || export exit_code=$? && echo "exitcode $exit_code"
+          cmd: phylum-ci --force-analysis --all-deps --skip-comments -qq --audit || export exit_code=$? && echo "exitcode $exit_code"
       - name: Phylum Report Comment
         if: ${{ inputs.add_report_comment_to_pull_request == true }}
         env:
