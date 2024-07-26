@@ -38,13 +38,25 @@ jobs:
       - uses: RDXWorks-actions/checkout@main
         with:
           fetch-depth: 0
-      - name: Analyze dependencies
-        uses: RDXWorks-actions/phylum-analyze-pr-action@main
+      - uses: RDXWorks-actions/setup-python@main
         with:
-          phylum_token: ${{ secrets.phylum_api_key }}
-          cmd: phylum-ci --force-analysis --all-deps --skip-comments -qq --audit > /dev/null 2>&1
+          python-version: 3.10.6
+      - name: Install Phylum
+        run: |
+          curl https://sh.phylum.io/ | sh -s -- --yes
+          # Add the Python user base binary directory to PATH
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Run Phylum Analysis
+        env: 
+          PHYLUM_API_KEY: ${{ secrets.PHYLUM_API_KEY }}         
+        run: | 
+          phylum analyze --quiet --label ${{ matrix.branch }}_branch_daily_schedule > /dev/null 2>&1 || exit_code=$?
+          if [ $exit_code -eq 100 ]; then 
+            echo "phylum_analyze_status=failure" >> $GITHUB_ENV 
+            exit 0; 
+          fi
       - name: Phylum Report Comment
-        if: ${{ inputs.add_report_comment_to_pull_request == true }}
+        if: ${{ inputs.add_report_comment_to_pull_request }} == true && ${{ env.phylum_analyze_status }} == "failure"
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ inputs.github_repository }}
