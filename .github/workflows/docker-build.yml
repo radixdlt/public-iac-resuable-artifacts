@@ -303,7 +303,7 @@ jobs:
       - name: Export Cache caluclation
         id: export_cache_calc
         run: |
-          export export_cache_flag=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release') }}
+          export export_cache_flag=true
           echo "export_cache_flag=$export_cache_flag" >> $GITHUB_OUTPUT
       - name: Restore cached image-cache
         id: cache-image-restore
