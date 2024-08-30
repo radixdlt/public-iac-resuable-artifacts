@@ -1,0 +1,57 @@
+name: Fetch docker info
+
+description: "Fetch kubernetes deployment docker repo and tag."
+
+inputs:
+  iam-role-arn:
+    description: "AWS IAM role arn."
+    required: true
+  aws-region:
+    description: "AWS region"
+    required: false
+    default: "eu-west-2"
+  eks-cluster-name:
+    description: "AWS EKS cluster name."
+    required: true
+  kubernetes-namespace:
+    description: "Kubernetes namespace."
+    required: true
+    default: "1.68.1"
+  kubernetes-deployment-name:
+    description: "Name of kubernetes deployment to fecth tag from."
+    required: true
+
+outputs:
+  docker-repo:
+    description: "Deployment docker repository."
+    value: ${{ steps.image_info.outputs.DEPLOYMENT_DOCKER_REPO }}
+  docker-tag:
+    description: "Deployment docker tag."
+    value: ${{ steps.image_info.outputs.DEPLOYMENT_DOCKER_TAG }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup helmfile and helm
+      uses: RDXWorks-actions/setup-helmfile@master
+
+    - name: Configure AWS credentials
+      uses: RDXWorks-actions/configure-aws-credentials@main
+      with:
+        role-to-assume: ${{ inputs.iam-role-arn }}
+        aws-region: ${{ inputs.aws-region }}
+
+    - name: Get cluster info
+      run: |
+        aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER --alias $EKS_CLUSTER
+        kubectl config get-contexts
+      env:
+        AWS_REGION: ${{ inputs.aws-region }}
+        EKS_CLUSTER: ${{ inputs.eks-cluster-name }}
+
+    - name: fetch image tags
+      id: image_info
+      run: |
+        DEPLOYMENT_IMAGE=$(kubectl get deployment ${{ inputs.kubernetes-deployment-name }}-o=jsonpath='{$.spec.template.spec.containers[:1].image}' -n ${{ inputs.kubernetes-namespace }})
+        echo DEPLOYMENT_DOCKER_REPO=$(echo $DEPLOYMENT_IMAGE | awk -F ":" '{print $1}') >> $GITHUB_OUTPUT
+        echo DEPLOYMENT_DOCKER_TAG=$(echo $DEPLOYMENT_IMAGE | awk -F ":" '{print $2}') >> $GITHUB_OUTPUT
