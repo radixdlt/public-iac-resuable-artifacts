@@ -42,6 +42,7 @@ runs:
         aws-region: ${{ inputs.aws-region }}
 
     - name: Get cluster info
+      shell: bash
       run: |
         aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER --alias $EKS_CLUSTER
         kubectl config get-contexts
@@ -50,6 +51,7 @@ runs:
         EKS_CLUSTER: ${{ inputs.eks-cluster-name }}
 
     - name: fetch image tags
+      shell: bash
       id: image_info
       run: |
         DEPLOYMENT_IMAGE=$(kubectl get deployment ${{ inputs.kubernetes-deployment-name }}-o=jsonpath='{$.spec.template.spec.containers[:1].image}' -n ${{ inputs.kubernetes-namespace }})
