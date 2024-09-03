@@ -62,7 +62,7 @@ runs:
     - name: Install snyk
       shell: bash
       run: |
-        npm install snyk -g
+        npm install snyk@1.1292.1 -g
         snyk -v
         snyk auth ${{ env.SNYK_TOKEN }}
     - name: Enable Snyk online images monitoring
