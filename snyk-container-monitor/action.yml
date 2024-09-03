@@ -62,10 +62,10 @@ runs:
     - name: Install snyk
       shell: bash
       run: |
-        npm install snyk -g
+        npm install snyk@1.1290.0 -g
         snyk -v
         snyk auth ${{ env.SNYK_TOKEN }}
     - name: Enable Snyk online images monitoring
       shell: bash
       run: |
-        snyk container monitor ${{ inputs.image }} --org=${{ inputs.snyk_org_id }} --target-reference=${{ inputs.target_ref }} --exclude-app-vulns -d
+        snyk container monitor ${{ inputs.image }} --org=${{ inputs.snyk_org_id }} --target-reference=${{ inputs.target_ref }}
