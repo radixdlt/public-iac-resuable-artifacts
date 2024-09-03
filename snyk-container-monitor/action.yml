@@ -68,4 +68,4 @@ runs:
     - name: Enable Snyk online images monitoring
       shell: bash
       run: |
-        snyk container monitor ${{ inputs.image }} --org=${{ inputs.snyk_org_id }} --target-reference=${{ inputs.target_ref }}
+        snyk container monitor ${{ inputs.image }} --org=${{ inputs.snyk_org_id }} --target-reference=${{ inputs.target_ref }} -d
