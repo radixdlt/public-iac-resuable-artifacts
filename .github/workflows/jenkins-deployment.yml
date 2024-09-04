@@ -134,7 +134,7 @@ jobs:
           {
             "git_repo" : "${{ github.repository }}",
             "git_branch" : "${{ inputs.github_branch }}",
-            "git_helm_changes_workflow" : "${{  }}",
+            "git_helm_changes_workflow" : "${{ inputs.is_github_helm_changes_workflow }}",
             "helmfile_environment": "${{ inputs.helmfile_environment }}",
             "hierarchical_namespace": "${{ inputs.hierarchical_namespace }}",
             "namespace" : "${{ inputs.kubernetes_namespace }}",
