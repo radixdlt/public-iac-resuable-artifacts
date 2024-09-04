@@ -66,6 +66,11 @@ on:
         required: true
         default: ""
         type: string
+      is_github_helm_changes_workflow:
+        description: "Is triggered by helm changes workflow?"
+        required: false
+        default: "no"
+        type: string
     secrets:
       secrets_account_id:
         description: 'AWS secrets account ID.'
@@ -129,6 +134,7 @@ jobs:
           {
             "git_repo" : "${{ github.repository }}",
             "git_branch" : "${{ inputs.github_branch }}",
+            "git_helm_changes_workflow" : "${{  }}",
             "helmfile_environment": "${{ inputs.helmfile_environment }}",
             "hierarchical_namespace": "${{ inputs.hierarchical_namespace }}",
             "namespace" : "${{ inputs.kubernetes_namespace }}",
