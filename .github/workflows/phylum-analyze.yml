@@ -58,7 +58,7 @@ jobs:
             exit 0; 
           fi
       - name: Phylum Report Comment
-        if: ${{ inputs.add_report_comment_to_pull_request == true && env.phylum_analyze_status == "failure" }} 
+        if: ${{ inputs.add_report_comment_to_pull_request == true && env.phylum_analyze_status == 'failure' }} 
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ inputs.github_repository }}
