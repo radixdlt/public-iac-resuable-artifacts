@@ -48,9 +48,11 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Run Phylum Analysis
         env: 
-          PHYLUM_API_KEY: ${{ secrets.PHYLUM_API_KEY }}         
+          PHYLUM_API_KEY: ${{ secrets.PHYLUM_API_KEY }}
+          PR_NUMBER: ${{ inputs.phylum_pr_number }}
+          BRANCH_NAME: ${{ inputs.phylum_pr_name }}         
         run: | 
-          phylum analyze --quiet --label ${{ matrix.branch }}_branch_daily_schedule > /dev/null 2>&1 || exit_code=$?
+          phylum analyze --quiet --label GitHub-Actions_PR%23${PR_NUMBER}_${BRANCH_NAME} > /dev/null 2>&1 || exit_code=$?
           if [ $exit_code -eq 100 ]; then 
             echo "phylum_analyze_status=failure" >> $GITHUB_ENV 
             exit 0; 
