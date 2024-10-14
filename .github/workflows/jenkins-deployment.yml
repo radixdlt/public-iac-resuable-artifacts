@@ -18,7 +18,7 @@ on:
       tailscale_client_version:
         description: "Tailscale client version."
         type: string
-        default: "1.66.4"
+        default: "1.76.0"
         required: false
       application_name:
         type: string
