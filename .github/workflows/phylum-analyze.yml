@@ -72,7 +72,7 @@ jobs:
           REPO: ${{ inputs.github_repository }}
           PR_NUMBER: ${{ inputs.phylum_pr_number }}
           BRANCH_NAME: ${{ inputs.phylum_pr_name }}
-          PHYLUM_PROJECT_ID: ${{ inputs.phylum_project_id }}
+          PHYLUM_PROJECT_ID: ${{ env.${{ inputs.phylum_project_id }} }}
           PHYLUM_GROUP_NAME: ${{ inputs.phylum_group_name }}
         run: |
           # Check if a comment already exists
