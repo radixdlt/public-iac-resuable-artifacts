@@ -54,6 +54,11 @@ jobs:
           secret_prefix: 'GH'
           secret_name: 'arn:aws:secretsmanager:eu-west-2:${{ secrets.SECRETS_ACCOUNT_ID }}:secret:github-actions/common/phylum-credentials-4koyXP'
           parse_json: true
+      - name: Set output
+        id: output
+        run: |
+          DUJE2="env.${{ inputs.phylum_project_id }}"
+          echo "DUJE=${{ ${DUJE2} }}" >> $GITHUB_ENV
       - name: Run Phylum Analysis
         env: 
           PHYLUM_API_KEY: ${{ env.GH_PHYLUM_API_KEY }}
@@ -72,7 +77,7 @@ jobs:
           REPO: ${{ inputs.github_repository }}
           PR_NUMBER: ${{ inputs.phylum_pr_number }}
           BRANCH_NAME: ${{ inputs.phylum_pr_name }}
-          PHYLUM_PROJECT_ID: ${{ env.${{ inputs.phylum_project_id }} }}
+          PHYLUM_PROJECT_ID: ${{ env.DUJE }}
           PHYLUM_GROUP_NAME: ${{ inputs.phylum_group_name }}
         run: |
           # Check if a comment already exists
