@@ -58,7 +58,7 @@ jobs:
         id: output
         run: |
           DUJE2="env.${{ inputs.phylum_project_id }}"
-          echo "DUJE=${{ ${DUJE2} }}" >> $GITHUB_ENV
+          echo "DUJE=${{ $DUJE2 }}" >> $GITHUB_ENV
       - name: Run Phylum Analysis
         env: 
           PHYLUM_API_KEY: ${{ env.GH_PHYLUM_API_KEY }}
