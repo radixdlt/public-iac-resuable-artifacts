@@ -46,11 +46,19 @@ jobs:
           curl https://sh.phylum.io/ | sh -s -- --yes
           # Add the Python user base binary directory to PATH
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: 'arn:aws:iam::${{ secrets.SECRETS_ACCOUNT_ID }}:role/gh-common-secrets-read-access'
+          app_name: 'radquest'
+          step_name: 'snyk-monitor'
+          secret_prefix: 'GH'
+          secret_name: 'arn:aws:secretsmanager:eu-west-2:${{ secrets.SECRETS_ACCOUNT_ID }}:secret:github-actions/common/phylum-credentials-4koyXP'
+          parse_json: true
       - name: Run Phylum Analysis
         env: 
-          PHYLUM_API_KEY: ${{ secrets.PHYLUM_API_KEY }}
+          PHYLUM_API_KEY: ${{ env.GH_PHYLUM_API_KEY }}
           PR_NUMBER: ${{ inputs.phylum_pr_number }}
-          BRANCH_NAME: ${{ inputs.phylum_pr_name }}         
+          BRANCH_NAME: ${{ inputs.phylum_pr_name }}
         run: | 
           phylum analyze --quiet --label GitHub-Actions_PR%23${PR_NUMBER}_${BRANCH_NAME} > /dev/null 2>&1 || exit_code=$?
           if [ $exit_code -eq 100 ]; then 
@@ -64,11 +72,12 @@ jobs:
           REPO: ${{ inputs.github_repository }}
           PR_NUMBER: ${{ inputs.phylum_pr_number }}
           BRANCH_NAME: ${{ inputs.phylum_pr_name }}
+          PHYLUM_PROJECT_ID: ${{ env.${{ inputs.phylum_project_id }} }}
           PHYLUM_GROUP_NAME: ${{ inputs.phylum_group_name }}
         run: |
           # Check if a comment already exists
           EXISTING_COMMENT_ID=$(gh api repos/${REPO}/issues/${PR_NUMBER}/comments | jq -r '.[] | select(.body | contains("Phylum Report")) | .id')
           if [ -z "$EXISTING_COMMENT_ID" ]; then
-            COMMENT_BODY="### [Phylum Report Link](https://app.phylum.io/projects/${{ inputs.phylum_project_id }}?label=GitHub-Actions_PR%23${PR_NUMBER}_${BRANCH_NAME}&group=${PHYLUM_GROUP_NAME})"          
+            COMMENT_BODY="### [Phylum Report Link](https://app.phylum.io/projects/${PHYLUM_PROJECT_ID}?label=GitHub-Actions_PR%23${PR_NUMBER}_${BRANCH_NAME}&group=${PHYLUM_GROUP_NAME})"
             gh api repos/${REPO}/issues/${PR_NUMBER}/comments -f body="${COMMENT_BODY}"
           fi
