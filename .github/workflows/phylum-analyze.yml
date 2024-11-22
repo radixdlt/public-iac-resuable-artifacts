@@ -47,10 +47,11 @@ jobs:
           # Add the Python user base binary directory to PATH
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Transform some variables
+        id: transform
         run: |
           echo "GIT_REPO_LOWERCASE=$(echo ${{ inputs.github_repository }} | awk -F '/' '{print $2}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
           echo "GIT_REPO_UPPERCASE=$(echo ${{ inputs.github_repository }} | awk -F '/' '{print $2}' | tr '[:lower:]' '[:upper:]')"
-          echo "PHYLUM_PROJECT_ID_TRANSFORMED=${GIT_REPO_UPPERCASE}_PHYLUM_PROJECT_ID" >> $GITHUB_ENV
+          echo "PHYLUM_PROJECT_ID_TRANSFORMED=${GIT_REPO_UPPERCASE}_PHYLUM_PROJECT_ID" >> $GITHUB_OUTPUT
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
           role_name: 'arn:aws:iam::${{ secrets.SECRETS_ACCOUNT_ID }}:role/gh-common-secrets-read-access'
@@ -77,7 +78,7 @@ jobs:
           REPO: ${{ inputs.github_repository }}
           PR_NUMBER: ${{ inputs.phylum_pr_number }}
           BRANCH_NAME: ${{ inputs.phylum_pr_name }}
-          PHYLUM_PROJECT_ID: ${{ env[env.PHYLUM_PROJECT_ID_TRANSFORMED] }}
+          PHYLUM_PROJECT_ID: ${{ env[steps.transform.outputs.PHYLUM_PROJECT_ID_TRANSFORMED] }}
           PHYLUM_GROUP_NAME: ${{ inputs.phylum_group_name }}
         run: |
           # Check if a comment already exists
