@@ -50,7 +50,7 @@ jobs:
         id: transform
         run: |
           echo "GIT_REPO_LOWERCASE=$(echo ${{ inputs.github_repository }} | awk -F '/' '{print $2}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-          GIT_REPO_UPPERCASE=$(echo ${{ inputs.github_repository }} | awk -F '/' '{print $2}' | tr '[:lower:]' '[:upper:]')
+          GIT_REPO_UPPERCASE=$(echo ${{ inputs.github_repository }} | awk -F '/' '{print $2}' | tr '[:lower:]' '[:upper:]' | tr '-' '_')
           echo $GIT_REPO_UPPERCASE
           echo ${GIT_REPO_UPPERCASE}
           echo "PHYLUM_PROJECT_ID_TRANSFORMED=${GIT_REPO_UPPERCASE}_PHYLUM_PROJECT_ID" >> $GITHUB_OUTPUT
