@@ -54,7 +54,7 @@ jobs:
           echo $GIT_REPO_UPPERCASE
           echo ${GIT_REPO_UPPERCASE}
           echo "PHYLUM_PROJECT_ID_TRANSFORMED=${GIT_REPO_UPPERCASE}_PHYLUM_PROJECT_ID" >> $GITHUB_OUTPUT
-          PHYLUM_PROJECT_ID_TRANSFORMED="${GIT_REPO_UPPERCASE}_PHYLUM_PROJECT_ID"
+          PHYLUM_PROJECT_ID_TRANSFORMED="GH_${GIT_REPO_UPPERCASE}_PHYLUM_PROJECT_ID"
           echo "$PHYLUM_PROJECT_ID_TRANSFORMED"
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
