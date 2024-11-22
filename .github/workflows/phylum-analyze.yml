@@ -51,7 +51,11 @@ jobs:
         run: |
           echo "GIT_REPO_LOWERCASE=$(echo ${{ inputs.github_repository }} | awk -F '/' '{print $2}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
           GIT_REPO_UPPERCASE=$(echo ${{ inputs.github_repository }} | awk -F '/' '{print $2}' | tr '[:lower:]' '[:upper:]')
+          echo $GIT_REPO_UPPERCASE
+          echo ${GIT_REPO_UPPERCASE}
           echo "PHYLUM_PROJECT_ID_TRANSFORMED=${GIT_REPO_UPPERCASE}_PHYLUM_PROJECT_ID" >> $GITHUB_OUTPUT
+          PHYLUM_PROJECT_ID_TRANSFORMED="${GIT_REPO_UPPERCASE}_PHYLUM_PROJECT_ID"
+          echo "$PHYLUM_PROJECT_ID_TRANSFORMED"
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
           role_name: 'arn:aws:iam::${{ secrets.SECRETS_ACCOUNT_ID }}:role/gh-common-secrets-read-access'
