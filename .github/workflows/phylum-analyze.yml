@@ -3,9 +3,9 @@ name: Phylum analyze
 on:
   workflow_call:
     inputs:
-      phylum_project_id:
-        required: false
-        type: string
+      # phylum_project_id:
+      #   required: false
+      #   type: string
       phylum_pr_number:
         required: false
         type: string
@@ -25,6 +25,7 @@ on:
     secrets:
       phylum_api_key:
         required: true
+      secrets_account_id:
 jobs:
   phylum_analyze:
     name: Analyze dependencies with Phylum
@@ -51,18 +52,14 @@ jobs:
         run: |
           echo "GIT_REPO_LOWERCASE=$(echo ${{ inputs.github_repository }} | awk -F '/' '{print $2}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
           GIT_REPO_UPPERCASE=$(echo ${{ inputs.github_repository }} | awk -F '/' '{print $2}' | tr '[:lower:]' '[:upper:]' | tr '-' '_')
-          echo $GIT_REPO_UPPERCASE
-          echo ${GIT_REPO_UPPERCASE}
           echo "PHYLUM_PROJECT_ID_TRANSFORMED=GH_${GIT_REPO_UPPERCASE}_PHYLUM_PROJECT_ID" >> $GITHUB_OUTPUT
-          PHYLUM_PROJECT_ID_TRANSFORMED="GH_${GIT_REPO_UPPERCASE}_PHYLUM_PROJECT_ID"
-          echo "$PHYLUM_PROJECT_ID_TRANSFORMED"
       - uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
-          role_name: 'arn:aws:iam::${{ secrets.SECRETS_ACCOUNT_ID }}:role/gh-common-secrets-read-access'
+          role_name: 'arn:aws:iam::${{ secrets.secrets_account_id }}:role/gh-common-secrets-read-access'
           app_name: ${{ env.GIT_REPO_LOWERCASE }}
           step_name: 'phylum'
           secret_prefix: 'GH'
-          secret_name: 'arn:aws:secretsmanager:eu-west-2:${{ secrets.SECRETS_ACCOUNT_ID }}:secret:github-actions/common/phylum-credentials-4koyXP'
+          secret_name: 'arn:aws:secretsmanager:eu-west-2:${{ secrets.secrets_account_id }}:secret:github-actions/common/phylum-credentials-4koyXP'
           parse_json: true
       - name: Run Phylum Analysis
         env: 
@@ -88,6 +85,6 @@ jobs:
           # Check if a comment already exists
           EXISTING_COMMENT_ID=$(gh api repos/${REPO}/issues/${PR_NUMBER}/comments | jq -r '.[] | select(.body | contains("Phylum Report")) | .id')
           if [ -z "$EXISTING_COMMENT_ID" ]; then
-            COMMENT_BODY="### [Phylum Report Link](https://app.phylum.io/projects/${PHYLUM_PROJECT_ID}?label=GitHub-Actions_PR%23${PR_NUMBER}_${BRANCH_NAME}&group=${PHYLUM_GROUP_NAME})"
+            COMMENT_BODY="### [Phylum Report Link](https://app.phylum.io/projects/${PHYLUM_PROJECT_ID}?label=GitHub-Actions_PR%2523${PR_NUMBER}_${BRANCH_NAME}&group=${PHYLUM_GROUP_NAME})"
             gh api repos/${REPO}/issues/${PR_NUMBER}/comments -f body="${COMMENT_BODY}"
           fi
