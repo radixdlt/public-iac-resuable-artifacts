@@ -15,5 +15,6 @@ runs:
   using: "composite"
   steps:
     - name: Fetch .snyk policy file
+      shell: bash
       run: |
         curl -H "Authorization: token ${{ inputs.token }}" https://snyk.io/api/v1/org/${{ inputs.org_id }}/project/${{ inputs.project_id }}/ignores | jq '{"ignore": .}' | yq eval -P > .snyk
