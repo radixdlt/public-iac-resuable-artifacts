@@ -1,0 +1,19 @@
+name: fetch-snyk-policy
+
+inputs:
+  token:
+    type: string
+    required: true
+  org_id:
+    type: string
+    required: true
+  project_id:
+    type: string
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Fetch .snyk policy file
+      run: |
+        curl -H "Authorization: token ${{ inputs.token }}" https://snyk.io/api/v1/org/${{ inputs.org_id }}/project/${{ inputs.project_id }}/ignores | jq '{"ignore": .}' | yq eval -P > .snyk
