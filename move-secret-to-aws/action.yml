@@ -1,0 +1,46 @@
+name: "Move GitHub secret to AWS Secrets Manager"
+description: "Takes a GitHub secret and creates or updates an AWS secret with it."
+
+inputs:
+  role_name:
+    type: string
+    required: true
+  region:
+    type: string
+    required: false
+    default: "eu-west-2"
+  app_name:
+    type: string
+    required: true
+    description: "Used for naming role session to audit secrets access"
+  step_name:
+    type: string
+    required: true
+    description: "Used for naming role session to audit secrets access because app_name is not enough"ś
+  secret-value:
+    description: "Value of the GitHub secret."
+    required: true
+  aws-secret-name:
+    description: "Destination AWS Secrets Manager secret name."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS credentials to fetch secrets
+      uses: RDXWorks-actions/configure-aws-credentials@main
+      with:
+        role-to-assume: ${{ inputs.role_name }}
+        aws-region: ${{ inputs.region }}
+        role-session-name: ${{ inputs.app_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Create or update AWS secret
+      shell: bash
+      run: |
+        # Attempt to create the secret; if it already exists, update it instead.
+        aws secretsmanager create-secret \
+          --name "${{ inputs.aws-secret-name }}" \
+          --secret-string "${{ inputs.secret-value }}" \
+          || aws secretsmanager update-secret \
+          --secret-id "${{ inputs.aws-secret-name }}" \
+          --secret-string "${{ inputs.secret-value }}"
