@@ -21,6 +21,9 @@ on:
       role_to_assume:
         description: 'Authentication method for docker via aws'
         required: false
+      build_secrets:
+        description: 'Secrets to expose to the Docker build step (newline-separated KEY=value list)'
+        required: false
     inputs:
       use_gh_remote_cache:
         description: 'Whether or not to use gh package registry as remote cache'
@@ -132,6 +135,11 @@ on:
         required: false
         type: string
         default: 'true'
+      build_secrets:
+         description: 'Same list as the secret above; will be passed verbatim to build-push-action'
+         required: false
+         type: string
+         default: ''
       scan_image:
         description: 'Scan image for vulnerabilities'
         required: false
@@ -333,6 +341,8 @@ jobs:
           target: ${{ inputs.target }}
           provenance: ${{ inputs.provenance }}
           sbom: ${{ inputs.with_sbom }}
+          secrets: |
+            ${{ inputs.build_secrets }}
       - if: steps.export_cache_calc.outputs.export_cache_flag == true
         name: Save Image cache
         id: cache-image-save
@@ -357,27 +367,6 @@ jobs:
           echo "Docker tags" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.metadata.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
           echo "Default Tag: ${{ steps.default_docker_tag.outputs.default_tag }}" >> $GITHUB_STEP_SUMMARY
-
-      # Snyk image scan
-      - if: inputs.scan_image == true
-        name: Fetch Snyk secrets
-        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
-        with:
-          role_name: 'arn:aws:iam::308190735829:role/gh-common-secrets-read-access'
-          app_name: ${{ inputs.image_name }}
-          step_name: 'snyk-scan-image'
-          secret_prefix: 'SNYK'
-          secret_name: 'arn:aws:secretsmanager:eu-west-2:308190735829:secret:github-actions/common/snyk-credentials-rXRpuX'
-          parse_json: true
-      - if: inputs.scan_image == true
-        name: Snyk image scan
-        continue-on-error: ${{ inputs.continue_on_scan_image_finding }}
-        shell: bash
-        run: |
-          npm install snyk@1.1292.1 -g
-          snyk -v
-          snyk auth ${{ env.SNYK_TOKEN }}
-          snyk container test ${{ inputs.image_registry }}/${{ inputs.image_organization }}/${{ inputs.image_name }}:${{ steps.default_docker_tag.outputs.default_tag }} --file=${{ inputs.dockerfile }} --severity-threshold=critical --target-reference=${{ inputs.snyk_target_ref }} --fail-on=all
 
       - if: inputs.post_script != ''
         name: post script
