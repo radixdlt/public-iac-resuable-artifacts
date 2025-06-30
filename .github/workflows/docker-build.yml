@@ -162,11 +162,8 @@ on:
         required: false
         type: string
         default: ''
-      build_secret_keys:
-        description: >-
-          New-line separated list of secret NAMES to expose to BuildKit, e.g. |
-            NPM_TOKEN
-            TURBO_TOKEN
+      build_secrets:
+        description: 'Newline-separated list of KEY=VALUE pairs to pass to Docker as secrets'
         required: false
         type: string
         default: ''
@@ -319,27 +316,12 @@ jobs:
         with:
           path: /tmp/outputs/cache/docker
           key: ${{ inputs.image_name }}-${{ inputs.cache_tag_suffix }}-${{ hashFiles(inputs.dockerfile) }}
-
-      # Convert the requested keys into the "KEY=value" lines expected by build-push-action
-      - name: Prepare BuildKit secrets
+      - name: Prepare secrets
         id: prep-secrets
-        shell: bash
         run: |
-          set -euo pipefail
-          secret_lines=""
-          while IFS= read -r key; do
-            key="$(echo "$key" | xargs)"
-            [[ -z "$key" ]] && continue
-            val="${!key:-}"
-            [[ -z "$val" ]] && continue
-            printf '::add-mask::%s\n' "$val"
-            secret_lines+="${key}=${val}\n"
-          done <<< "${{ inputs.build_secret_keys }}"
-          {
-            echo 'list<<EOF'
-            printf '%b' "$secret_lines"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+          echo "list<<EOF" >> "$GITHUB_OUTPUT"
+          echo "${{ inputs.build_secrets }}" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
       # Building the image
       # This is version v4.1.1
       # https://github.com/docker/build-push-action/releases/tag/v4.1.1
