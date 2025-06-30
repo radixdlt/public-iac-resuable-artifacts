@@ -326,20 +326,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          IFS=$'\n' read -d '' -r -a KEYS <<<"${{ inputs.build_secret_keys }}"
           secret_lines=""
-          for key in "${KEYS[@]}"; do
-            key="$(echo "${key}" | xargs)"
-            [[ -z "${key}" ]] && continue
-            val="${!key:-}" 
-            if [[ -n "${val}" ]]; then
-              secret_lines+="${key}=${val}"$'\n'
-            fi
-          done
-          echo "::add-mask::${secret_lines}"
+          while IFS= read -r key; do
+            key="$(echo "$key" | xargs)"      # trim whitespace
+            [[ -z "$key" ]] && continue
+            val="${!key:-}"                   # expand env-var by name
+            [[ -z "$val" ]] && continue
+            printf '::add-mask::%s\n' "$val"  # keep value out of logs
+            secret_lines+="${key}=${val}\n"
+          done <<< "${{ inputs.build_secret_keys }}"
           {
             echo 'list<<EOF'
-            printf '%s' "${secret_lines}"
+            printf '%b' "$secret_lines"
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
       # Building the image
