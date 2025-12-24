@@ -227,7 +227,6 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::308190735829:role/gh-common-secrets-read-access
           aws-region: eu-west-2
-          role-skip-session-tagging: true
       # This is version v1.0.4
       # https://github.com/aws-actions/configure-aws-credentials/releases/tag/v1.0.4
       - name: Read secrets from AWS Secrets Manager into environment variables (Private)
@@ -251,7 +250,6 @@ jobs:
         with:
           role-to-assume: ${{ secrets.role_to_assume }}
           aws-region: eu-west-2
-          role-skip-session-tagging: true
       - if: inputs.enable_dockerhub == 'true'
         name: Read secrets from AWS Secrets Manager into environment variables (Public)
         uses: RDXWorks-actions/aws-secretsmanager-get-secrets@main
