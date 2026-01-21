@@ -1,0 +1,54 @@
+name: "Publish to npm (OIDC)"
+description: "Installs deps and publishes an npm package using npm OIDC provenance (no NODE_AUTH_TOKEN)."
+
+inputs:
+  node-version:
+    description: "Node.js version"
+    required: false
+    default: "20"
+  npm-version:
+    description: "npm version/range to install globally"
+    required: false
+    default: "^11.5.1"
+  registry-url:
+    description: "npm registry URL"
+    required: false
+    default: "https://registry.npmjs.org"
+  install-command:
+    description: "Install command"
+    required: false
+    default: "npm ci"
+  publish-command:
+    description: "Publish command"
+    required: false
+    default: "npm publish --access public"
+  working-directory:
+    description: "Directory to run commands in (monorepos)"
+    required: false
+    default: "."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: RDXWorks-actions/checkout@main
+
+    - name: Setup Node
+      uses: RDXWorks-actions/setup-node@main
+      with:
+        node-version: ${{ inputs.node-version }}
+        registry-url: ${{ inputs.registry-url }}
+
+    - name: Upgrade npm
+      shell: bash
+      run: npm i -g npm@${{ inputs.npm-version }}
+
+    - name: Install deps
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: ${{ inputs.install-command }}
+
+    - name: Publish (OIDC)
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: env -u NODE_AUTH_TOKEN -u NPM_CONFIG_USERCONFIG ${{ inputs.publish-command }}
